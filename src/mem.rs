@@ -1,7 +1,10 @@
+type Record = str;
+
 pub const SIZE : usize = 4048;
 
+
 pub struct Memory {
-    pub mem: [u8; SIZE]
+    mem: [u8; SIZE]
 }
 
 pub fn new() -> Memory {
@@ -26,6 +29,10 @@ impl Memory {
         for (i, e) in self.mem[index * 4..(index+1) * 4].iter_mut().enumerate() {
             *e = (value & (0xff << (4-i-1) * 8)) as u8;
         }
+    }
+
+    pub fn load_alf(Vec<Record> records) {
+        unimplemented!();
     }
 
 }
