@@ -1,5 +1,3 @@
-type Record = str;
-
 pub const SIZE : usize = 4048;
 
 
@@ -30,11 +28,6 @@ impl Memory {
             *e = (value & (0xff << (4-i-1) * 8)) as u8;
         }
     }
-
-    pub fn load_alf(Vec<Record> records) {
-        unimplemented!();
-    }
-
 }
 
 #[cfg(test)]

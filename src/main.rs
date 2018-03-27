@@ -11,11 +11,6 @@ mod alf;
 mod args;
 
 
-fn check_line(line: String) {
-    println!("{}", line);
-}
-
-
 fn init_logger()
 {
     CombinedLogger::init(

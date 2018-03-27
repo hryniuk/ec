@@ -9,12 +9,6 @@ pub struct Alf {
     records: Vec<record::Record>
 }
 
-fn line_to_record(line: Result<String, Error>) -> Result<record::Record, Error> {
-    match line {
-        Ok(line) => record::Record::from(line),
-        Err(e) => Err(e),
-    }
-}
 
 impl Alf {
     pub fn from_file(path: &Path) -> Result<Alf, Error> {
@@ -29,6 +23,7 @@ impl Alf {
         records.and_then(|r| Ok(Alf{records: r}))
     }
 }
+
 
 #[cfg(test)]
 mod test {
