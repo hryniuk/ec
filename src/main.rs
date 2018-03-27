@@ -1,31 +1,43 @@
-use std::io::{BufRead,BufReader};
+use std::io::{BufRead, BufReader};
 use std::fs::File;
 use std::env;
-use std::process;
+
+#[macro_use] extern crate log;
+extern crate simplelog;
+use simplelog::*;
 
 mod ec;
 mod mem;
 mod record;
+mod args;
 
-fn usage(name: &String) {
-    println!("Usage:\n\t{} <alf_path>", name);
-}
 
 fn check_line(line: String) {
     println!("{}", line);
 }
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    if args.len() <= 1 {
-        usage(&args[0]);
-        process::exit(0);
-    }
 
-    let alf_path = &args[1];
+fn init_logger()
+{
+    CombinedLogger::init(
+        vec![
+            TermLogger::new(LevelFilter::Debug, Config::default()).unwrap(),
+        ]
+    ).unwrap();
+}
+
+
+fn main() {
+    init_logger();
+
+    let args: Vec<String> = env::args().collect();
+
+    // TODO: change this behaviour to print usage silently
+    let alf_path = args::get_alf_path(&args).expect(&args::usage(&args[0]));
+    debug!("Read alf path from args: {}", alf_path);
 
     let reader = BufReader::new(File::open(alf_path).expect
-        ("Cannot open file"));
+    ("Cannot open file"));
 
     for line in reader.lines() {
         match line {
@@ -34,6 +46,5 @@ fn main() {
         }
     }
 
-    let ecc = ec::Ec{mem : mem::new()};
-
+    let ecc = ec::Ec { mem: mem::new() };
 }
