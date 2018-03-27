@@ -1,6 +1,5 @@
-use std::io::{BufRead, BufReader};
-use std::fs::File;
 use std::env;
+use std::process;
 
 #[macro_use] extern crate log;
 extern crate simplelog;
@@ -8,7 +7,7 @@ use simplelog::*;
 
 mod ec;
 mod mem;
-mod record;
+mod alf;
 mod args;
 
 
@@ -32,19 +31,16 @@ fn main() {
 
     let args: Vec<String> = env::args().collect();
 
-    // TODO: change this behaviour to print usage silently
-    let alf_path = args::get_alf_path(&args).expect(&args::usage(&args[0]));
-    debug!("Read alf path from args: {}", alf_path);
+    let alf_path: std::path::PathBuf = args::get_alf_path(&args).unwrap_or_else(||{
+        print!("{}", args::usage(&args[0]));
+        process::exit(1);
+    });
 
-    let reader = BufReader::new(File::open(alf_path).expect
-    ("Cannot open file"));
-
-    for line in reader.lines() {
-        match line {
-            Ok(v) => check_line(v),
-            Err(e) => println!("Error on reading {} file: {}", &alf_path, e),
-        }
-    }
+    let alf = alf::Alf::from_file(&alf_path).unwrap_or_else(|e|{
+        // TODO: avoid this unwrap in some way
+        error!("{}: {}", alf_path.to_str().unwrap(), e);
+        process::exit(1);
+    });
 
     let ecc = ec::Ec { mem: mem::new() };
 }
