@@ -5,3 +5,5 @@ authors = ["Łukasz Hryniuk <lukasz.hryniuk@wp.pl>"]
 
 [dependencies]
 byteorder = "1"
+log = "*"
+simplelog = "^0.5.0"
