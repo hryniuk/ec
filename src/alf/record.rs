@@ -9,16 +9,25 @@ pub struct Record {
 
 impl Record {
     pub fn from(record_line: String) -> Result<Record, Error> {
+        assert!(record_line.len() > 0);
         // TODO: consider converting string to Vec<Ops>
         if !Record::is_valid(&record_line) {
             return Err(Error::new(ErrorKind::Other, "invalid record line"));
         }
+
+        let sequence_number = Record::read_sequence_number(&record_line);
+        debug!("Read sequence number {} from record line {}", sequence_number.unwrap(), record_line);
 
         Ok(Record{data: record_line})
     }
 
     fn read_checksum(record_line: &String) -> Option<u32> {
         record_line.chars().next().unwrap().to_digit(16)
+    }
+
+    fn read_sequence_number(record_line: &String) -> Option<u32> {
+        // TODO: handle this Result correctly
+        Some(u32::from_str_radix(&record_line[1..4], 16).unwrap())
     }
 
     fn calculate_checksum(record_line: &String) -> u32 {
