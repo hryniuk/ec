@@ -1,7 +1,28 @@
 //use std::vec::Vec;
 use std::io::{Error,ErrorKind};
+use std::u32;
+use std::vec::Vec;
+use std::str;
+
+extern crate simplelog;
+use simplelog::*;
 
 
+const CHECKSUM_LENGTH: u32  = 1;
+// TODO: consider chaning it to offset (so 4 + CHECKSUM_LENGTH) instead
+const ADDRESS_LENGTH: usize = 4;
+const TRIPLES_INDEX: usize = 4;
+const DATA_FIELD_LENGHT: u32 = 2;
+
+
+struct DataTriple {
+    count: u8,
+    address: u32,
+    data: Vec<u8>
+}
+
+
+/// Record is a basic unit of absolute load file (ALF)
 pub struct Record {
     data: String
 }
@@ -18,6 +39,8 @@ impl Record {
         let sequence_number = Record::read_sequence_number(&record_line);
         debug!("Read sequence number {} from record line {}", sequence_number.unwrap(), record_line);
 
+        let data_triples = Record::read_data_triples(&record_line);
+
         Ok(Record{data: record_line})
     }
 
@@ -28,6 +51,37 @@ impl Record {
     fn read_sequence_number(record_line: &String) -> Option<u32> {
         // TODO: handle this Result correctly
         Some(u32::from_str_radix(&record_line[1..4], 16).unwrap())
+    }
+
+    // TODO: consider changing result type
+    // to handle errors (Result? Option? empty Vec on error?)
+    fn read_data_triples(record_line: &String) -> Vec<DataTriple> {
+        let mut i: usize = TRIPLES_INDEX as usize;
+
+        while i < record_line.len() {
+            // TODO: add error handling here
+            // TODO: move it to DataTriple::new() function
+            let count = u32::from_str_radix(&record_line[i..i+1], 16).unwrap();
+
+            let address = u32::from_str_radix(&record_line[i+1..i+ADDRESS_LENGTH+1], 16).unwrap();
+
+            let data_offset: usize = i+ADDRESS_LENGTH+1;
+            let data_fields: Vec<u8> = record_line[data_offset..data_offset+(count * DATA_FIELD_LENGHT) as usize]
+                .as_bytes()
+                .chunks(DATA_FIELD_LENGHT as usize)
+                .map(|c| u8::from_str_radix(str::from_utf8(c).unwrap(), 16).unwrap())
+                .collect::<Vec<u8>>();
+
+            for data_field in data_fields {
+                debug!("Reading data field: {}", data_field);
+
+            }
+            debug!("Read data triple count: {} address: {}", count, address);
+
+            i += (1 + count * 2 + ADDRESS_LENGTH as u32) as usize;
+        }
+
+        Vec::new()
     }
 
     fn calculate_checksum(record_line: &String) -> u32 {
