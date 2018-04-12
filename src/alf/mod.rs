@@ -4,6 +4,7 @@ use std::io::Error;
 use std::io::{BufRead,BufReader};
 
 mod record;
+mod data_triple;
 
 pub struct Alf {
     records: Vec<record::Record>

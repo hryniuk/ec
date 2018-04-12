@@ -1,25 +1,17 @@
-//use std::vec::Vec;
 use std::io::{Error,ErrorKind};
 use std::u32;
 use std::vec::Vec;
-use std::str;
 
 extern crate simplelog;
 use simplelog::*;
 
+use alf::data_triple::DataTriple;
+use alf::data_triple::ADDRESS_LENGTH;
+
 
 const CHECKSUM_LENGTH: u32  = 1;
 // TODO: consider chaning it to offset (so 4 + CHECKSUM_LENGTH) instead
-const ADDRESS_LENGTH: usize = 4;
 const TRIPLES_INDEX: usize = 4;
-const DATA_FIELD_LENGHT: u32 = 2;
-
-
-struct DataTriple {
-    count: u8,
-    address: u32,
-    data_fields: Vec<u8>
-}
 
 
 /// Record is a basic unit of absolute load file (ALF)
@@ -61,25 +53,9 @@ impl Record {
         let mut data_triples: Vec<DataTriple> = Vec::new();
 
         while i < record_line.len() {
-            // TODO: add error handling here
-            // TODO: move it to DataTriple::new() function
             let count = u32::from_str_radix(&record_line[i..i+1], 16).unwrap();
-
-            let address = u32::from_str_radix(&record_line[i+1..i+ADDRESS_LENGTH+1], 16).unwrap();
-
-            let data_offset: usize = i+ADDRESS_LENGTH+1;
-            let data_fields: Vec<u8> = record_line[data_offset..data_offset+(count * DATA_FIELD_LENGHT) as usize]
-                .as_bytes()
-                .chunks(DATA_FIELD_LENGHT as usize)
-                .map(|c| u8::from_str_radix(str::from_utf8(c).unwrap(), 16).unwrap())
-                .collect::<Vec<u8>>();
-
-            for data_field in data_fields.iter() {
-                debug!("Reading data field: {}", data_field);
-            }
-            debug!("Read data triple count: {} address: {}", count, address);
-
-            data_triples.push(DataTriple{count: count as u8, address, data_fields});
+            let chunk_length: usize = ADDRESS_LENGTH + (2 * count as usize);
+            data_triples.push(DataTriple::from(count as u8, &record_line[i+1..i+1+chunk_length]));
 
             i += (1 + count * 2 + ADDRESS_LENGTH as u32) as usize;
         }
