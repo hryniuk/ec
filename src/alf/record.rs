@@ -18,7 +18,7 @@ const DATA_FIELD_LENGHT: u32 = 2;
 struct DataTriple {
     count: u8,
     address: u32,
-    data: Vec<u8>
+    data_fields: Vec<u8>
 }
 
 
@@ -57,6 +57,7 @@ impl Record {
     // to handle errors (Result? Option? empty Vec on error?)
     fn read_data_triples(record_line: &String) -> Vec<DataTriple> {
         let mut i: usize = TRIPLES_INDEX as usize;
+        let mut data_triples: Vec<DataTriple> = Vec::new();
 
         while i < record_line.len() {
             // TODO: add error handling here
@@ -72,16 +73,17 @@ impl Record {
                 .map(|c| u8::from_str_radix(str::from_utf8(c).unwrap(), 16).unwrap())
                 .collect::<Vec<u8>>();
 
-            for data_field in data_fields {
+            for data_field in data_fields.iter() {
                 debug!("Reading data field: {}", data_field);
-
             }
             debug!("Read data triple count: {} address: {}", count, address);
+
+            data_triples.push(DataTriple{count: count as u8, address, data_fields});
 
             i += (1 + count * 2 + ADDRESS_LENGTH as u32) as usize;
         }
 
-        Vec::new()
+        data_triples
     }
 
     fn calculate_checksum(record_line: &String) -> u32 {
