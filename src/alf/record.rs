@@ -24,7 +24,8 @@ struct DataTriple {
 
 /// Record is a basic unit of absolute load file (ALF)
 pub struct Record {
-    data: String
+    sequence_number: u32,
+    data_triples: Vec<DataTriple>
 }
 
 
@@ -36,12 +37,12 @@ impl Record {
             return Err(Error::new(ErrorKind::Other, "invalid record line"));
         }
 
-        let sequence_number = Record::read_sequence_number(&record_line);
-        debug!("Read sequence number {} from record line {}", sequence_number.unwrap(), record_line);
+        let sequence_number = Record::read_sequence_number(&record_line).unwrap_or(0);
+        debug!("Read sequence number {} from record line {}", sequence_number, record_line);
 
         let data_triples = Record::read_data_triples(&record_line);
 
-        Ok(Record{data: record_line})
+        Ok(Record{sequence_number, data_triples})
     }
 
     fn read_checksum(record_line: &String) -> Option<u32> {
