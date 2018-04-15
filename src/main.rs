@@ -10,16 +10,11 @@ use simplelog::*;
 mod ec;
 mod args;
 
-
-fn init_logger()
-{
-    CombinedLogger::init(
-        vec![
-            TermLogger::new(LevelFilter::Debug, Config::default()).unwrap(),
-        ]
-    ).unwrap();
+fn init_logger() {
+    CombinedLogger::init(vec![
+        TermLogger::new(LevelFilter::Debug, Config::default()).unwrap(),
+    ]).unwrap();
 }
-
 
 fn main() {
     init_logger();
@@ -31,12 +26,13 @@ fn main() {
         process::exit(1);
     });
 
-    let alf = ec::alf::Alf::from_file(&alf_path)
-        .unwrap_or_else(|e| {
-            // TODO: avoid this unwrap in some way
-            error!("{}: {}", alf_path.to_str().unwrap(), e);
-            process::exit(1);
-        });
+    let alf = ec::alf::Alf::from_file(&alf_path).unwrap_or_else(|e| {
+        // TODO: avoid this unwrap in some way
+        error!("{}: {}", alf_path.to_str().unwrap(), e);
+        process::exit(1);
+    });
 
-    let _ecc = ec::Ec { mem: ec::mem::Memory::from(&alf) };
+    let _ecc = ec::Ec {
+        mem: ec::mem::Memory::from(&alf),
+    };
 }

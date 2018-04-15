@@ -3,15 +3,12 @@ pub const SIZE: usize = 8096;
 use ec;
 
 pub struct Memory {
-    mem: [u8; SIZE]
+    mem: [u8; SIZE],
 }
-
 
 impl Memory {
     pub fn new() -> Memory {
-        Memory {
-            mem: [0; SIZE]
-        }
+        Memory { mem: [0; SIZE] }
     }
 
     pub fn from(alf: &ec::alf::Alf) -> Memory {
@@ -54,7 +51,11 @@ impl Memory {
         for data_triple in &record.data_triples {
             for (i, data_field) in data_triple.data_fields.iter().enumerate() {
                 assert!(data_triple.address + i < SIZE);
-                debug!("Setting {} value at {}", data_field, data_triple.address + i);
+                debug!(
+                    "Setting {} value at {}",
+                    data_field,
+                    data_triple.address + i
+                );
                 self.set(data_triple.address + i, *data_field);
             }
         }

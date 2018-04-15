@@ -3,7 +3,7 @@ pub mod alf;
 pub mod mem;
 
 pub struct Ec {
-    pub mem : mem::Memory
+    pub mem: mem::Memory,
 }
 
 impl Ec {
