@@ -6,13 +6,14 @@ pub struct Memory {
     mem: [u8; SIZE]
 }
 
-pub fn new() -> Memory {
-    Memory {
-        mem: [0; SIZE]
-    }
-}
 
 impl Memory {
+    pub fn new() -> Memory {
+        Memory {
+            mem: [0; SIZE]
+        }
+    }
+
     pub fn from(alf: ec::alf::Alf) {
 
     }
