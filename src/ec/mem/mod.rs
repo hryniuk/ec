@@ -1,4 +1,4 @@
-pub const SIZE: usize = 4048;
+pub const SIZE: usize = 8096;
 
 use ec;
 
@@ -14,8 +14,22 @@ impl Memory {
         }
     }
 
-    pub fn from(alf: ec::alf::Alf) {
+    pub fn from(alf: &ec::alf::Alf) -> Memory {
+        let mut mem: Memory = Memory::new();
 
+        for record in &alf.records {
+            mem.apply_record(&record);
+        }
+
+        mem
+    }
+
+    pub fn get(&self, address: usize) -> u8 {
+        self.mem[address]
+    }
+
+    pub fn set(&mut self, address: usize, value: u8) {
+        self.mem[address] = value;
     }
 
     pub fn get_gpr(&self, index: usize) -> u32 {
@@ -34,6 +48,17 @@ impl Memory {
             *e = (value & (0xff << (4 - i - 1) * 8)) as u8;
         }
     }
+
+    // TODO: find a better name
+    fn apply_record(&mut self, record: &ec::alf::record::Record) {
+        for data_triple in &record.data_triples {
+            for (i, data_field) in data_triple.data_fields.iter().enumerate() {
+                assert!(data_triple.address + i < SIZE);
+                debug!("Setting {} value at {}", data_field, data_triple.address + i);
+                self.set(data_triple.address + i, *data_field);
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -42,7 +67,7 @@ mod test {
 
     #[test]
     fn test_gpr() {
-        let mut memory: Memory = new();
+        let mut memory: Memory = Memory::new();
         let index = 1;
         assert_eq!(0, memory.get_gpr(index));
 
@@ -53,7 +78,7 @@ mod test {
 
     #[test]
     fn test_memory_access() {
-        let mut memory: Memory = new();
+        let mut memory: Memory = Memory::new();
         let address = 0x70;
         let value = 0xa0;
 
