@@ -3,7 +3,6 @@ use std::u32;
 use std::vec::Vec;
 
 extern crate simplelog;
-use simplelog::*;
 
 use ec::alf::data_triple::DataTriple;
 use ec::alf::data_triple::ADDRESS_LENGTH;
@@ -57,7 +56,7 @@ impl Record {
             let chunk_length: usize = ADDRESS_LENGTH + (2 * count as usize);
             data_triples.push(DataTriple::from(count as u8, &record_line[i+1..i+1+chunk_length]));
 
-            i += (1 + count * 2 + ADDRESS_LENGTH as u32) as usize;
+            i += (CHECKSUM_LENGTH + count * 2 + ADDRESS_LENGTH as u32) as usize;
         }
 
         data_triples

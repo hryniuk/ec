@@ -6,7 +6,6 @@ const DATA_FIELD_LENGTH: u32 = 2;
 
 
 pub struct DataTriple {
-    count: u8,
     pub address: usize,
     pub data_fields: Vec<u8>
 }
@@ -30,6 +29,6 @@ impl DataTriple {
             debug!("Reading data field: {}", data_field);
         }
         debug!("Read data triple count: {} address: {}", count, address);
-        DataTriple{count: count as u8, address: address as usize, data_fields}
+        DataTriple{address: address as usize, data_fields}
     }
 }

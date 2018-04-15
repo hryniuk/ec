@@ -38,5 +38,5 @@ fn main() {
             process::exit(1);
         });
 
-    let ecc = ec::Ec { mem: ec::mem::Memory::from(&alf) };
+    let _ecc = ec::Ec { mem: ec::mem::Memory::from(&alf) };
 }
