@@ -5,8 +5,8 @@ use std::vec::Vec;
 extern crate simplelog;
 use simplelog::*;
 
-use alf::data_triple::DataTriple;
-use alf::data_triple::ADDRESS_LENGTH;
+use ec::alf::data_triple::DataTriple;
+use ec::alf::data_triple::ADDRESS_LENGTH;
 
 
 const CHECKSUM_LENGTH: u32  = 1;

@@ -1,5 +1,5 @@
 pub const SIZE : usize = 4048;
-
+use ec;
 
 pub struct Memory {
     mem: [u8; SIZE]
@@ -12,6 +12,10 @@ pub fn new() -> Memory {
 }
 
 impl Memory {
+    pub fn from(alf: ec::alf::Alf) {
+
+    }
+
     pub fn get_gpr(&self, index : usize) -> u32 {
         assert!(index < 16);
         let mut value : u32 = 0;
