@@ -17,7 +17,7 @@ const TRIPLES_INDEX: usize = 4;
 /// Record is a basic unit of absolute load file (ALF)
 pub struct Record {
     sequence_number: u32,
-    data_triples: Vec<DataTriple>
+    pub data_triples: Vec<DataTriple>
 }
 
 

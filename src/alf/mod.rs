@@ -7,7 +7,7 @@ mod record;
 mod data_triple;
 
 pub struct Alf {
-    records: Vec<record::Record>
+    pub records: Vec<record::Record>
 }
 
 
@@ -15,6 +15,7 @@ impl Alf {
     pub fn from_file(path: &Path) -> Result<Alf, Error> {
         let reader: BufReader<File> = BufReader::new(File::open(path)?);
 
+        // TODO: drop records with invalid sequence numbers
         let records: Result<Vec<record::Record>, Error> = reader.lines()
             .map(|line: Result<String, Error>| {
                 line.and_then(record::Record::from)

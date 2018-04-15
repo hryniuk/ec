@@ -7,8 +7,8 @@ const DATA_FIELD_LENGTH: u32 = 2;
 
 pub struct DataTriple {
     count: u8,
-    address: u32,
-    data_fields: Vec<u8>
+    pub address: u32,
+    pub data_fields: Vec<u8>
 }
 
 impl DataTriple {
