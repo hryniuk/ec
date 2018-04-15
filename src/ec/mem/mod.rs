@@ -48,4 +48,15 @@ mod test {
         memory.set_gpr(index, value);
         assert_eq!(value, memory.get_gpr(index));
     }
+
+    #[test]
+    fn test_memory_access() {
+        let mut memory: Memory = new();
+        let address = 0x70;
+        let value = 0xa0;
+
+        assert_eq!(0, memory.get(address));
+        memory.set(address, value);
+        assert_eq!(value, memory.get(address));
+    }
 }
