@@ -27,6 +27,8 @@ pub enum EcError {
 }
 
 pub struct Ec {
+    ilc: u32,
+    ccr: u32,
     pub mem: mem::Memory,
 }
 
