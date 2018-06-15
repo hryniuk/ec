@@ -7,8 +7,8 @@ extern crate simplelog;
 
 use simplelog::*;
 
-mod ec;
 mod args;
+mod ec;
 
 fn init_logger() {
     CombinedLogger::init(vec![

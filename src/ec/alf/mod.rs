@@ -1,10 +1,10 @@
-use std::path::Path;
 use std::fs::File;
 use std::io::Error;
 use std::io::{BufRead, BufReader};
+use std::path::Path;
 
-pub mod record;
 pub mod data_triple;
+pub mod record;
 
 pub struct Alf {
     pub records: Vec<record::Record>,

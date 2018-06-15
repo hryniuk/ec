@@ -33,7 +33,7 @@ pub struct Ec {
 }
 
 impl Ec {
-    pub fn run() {
-        unimplemented!();
+    pub fn run() -> Result<(), EcError> {
+        Ok(())
     }
 }
