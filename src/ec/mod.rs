@@ -1,6 +1,12 @@
+use ec;
+use std::cell::RefCell;
+use std::rc::Rc;
+
 // TODO: refactor to make them private (
 pub mod alf;
+pub mod cpu;
 pub mod mem;
+pub mod sv;
 
 /// Type representing error arising during
 /// course of instruction execution
@@ -27,13 +33,24 @@ pub enum EcError {
 }
 
 pub struct Ec {
-    ilc: u32,
     ccr: u32,
-    pub mem: mem::Memory,
+    pub mem: Rc<RefCell<mem::Memory>>,
+    cpu: cpu::Cpu,
+    supervisor: sv::Supervisor,
 }
 
 impl Ec {
-    pub fn run() -> Result<(), EcError> {
+    pub fn new(mem: Rc<RefCell<mem::Memory>>) -> Ec {
+        Ec {
+            ccr: 0,
+            mem: mem.clone(),
+            cpu: cpu::Cpu::new(),
+            supervisor: sv::Supervisor::new(mem.clone()),
+        }
+    }
+
+    pub fn run(self) -> Result<(), EcError> {
+        self.supervisor.run_with(&self.cpu);
         Ok(())
     }
 }

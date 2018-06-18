@@ -6,6 +6,8 @@ extern crate log;
 extern crate simplelog;
 
 use simplelog::*;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 mod args;
 mod ec;
@@ -32,7 +34,5 @@ fn main() {
         process::exit(1);
     });
 
-    let _ecc = ec::Ec {
-        mem: ec::mem::Memory::from(&alf),
-    };
+    let _ecc = ec::Ec::new(Rc::new(RefCell::new(ec::mem::Memory::from(&alf))));
 }
