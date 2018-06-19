@@ -29,6 +29,10 @@ impl Memory {
         self.mem[address] = value;
     }
 
+    pub fn read_word(&self, address: usize) -> u16 {
+        ((self.mem[address] as u16) << 8) | self.mem[address + 1] as u16
+    }
+
     pub fn get_gpr(&self, index: usize) -> u32 {
         assert!(index < 16);
         let mut value: u32 = 0;
@@ -86,5 +90,17 @@ mod test {
         assert_eq!(0, memory.get(address));
         memory.set(address, value);
         assert_eq!(value, memory.get(address));
+    }
+
+    #[test]
+    fn test_returns_valid_word_value() {
+        let mut memory: Memory = Memory::new();
+        let address = 0x70;
+        let expected_value = 0x4020;
+
+        assert_eq!(0, memory.get(address));
+        memory.set(address, 0x40);
+        memory.set(address + 1, 0x20);
+        assert_eq!(expected_value, memory.read_word(address));
     }
 }
