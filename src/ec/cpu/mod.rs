@@ -6,6 +6,9 @@ use ec::EcError;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+type OpCode = u8;
+type IndirectBit = u8;
+
 pub struct Cpu {
     ilc: u32,
     mem: Rc<RefCell<mem::Memory>>,
@@ -14,6 +17,10 @@ pub struct Cpu {
 impl Cpu {
     pub fn new(mem: Rc<RefCell<mem::Memory>>) -> Cpu {
         Cpu { ilc: 0xa, mem }
+    }
+    fn read_opcode(&self, address: usize) -> (IndirectBit, OpCode) {
+        let byte = self.mem.borrow().get(address);
+        (byte & 0x40, byte & 0x7f)
     }
     fn get_instruction() -> instruction::Instruction {
         instruction::Instruction::SupervisorCall(0, 0, 0)
