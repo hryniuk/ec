@@ -14,7 +14,7 @@ mod ec;
 
 fn init_logger() {
     CombinedLogger::init(vec![
-        TermLogger::new(LevelFilter::Debug, Config::default()).unwrap(),
+        TermLogger::new(LevelFilter::Trace, Config::default()).unwrap(),
     ]).unwrap();
 }
 
