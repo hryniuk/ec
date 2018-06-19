@@ -26,6 +26,10 @@ impl Cpu {
         instruction::Instruction::SupervisorCall(0, 0, 0)
     }
     pub fn poll(&self, trace: bool) -> Result<sv::Action, EcError> {
+        if self.ilc % 2 != 0 {
+            return Err(EcError::IllegalInstructionAddress);
+        }
+
         let next_instr = Cpu::get_instruction();
         if trace {
             trace!("{:?}", next_instr);
