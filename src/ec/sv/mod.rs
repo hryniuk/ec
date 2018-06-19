@@ -16,7 +16,7 @@ impl Supervisor {
     pub fn new(mem: Rc<RefCell<mem::Memory>>) -> Supervisor {
         Supervisor { mem }
     }
-    pub fn run_with(self, cpu: &cpu::Cpu) {
+    pub fn run_with(&self, cpu: &mut cpu::Cpu) {
         loop {
             match cpu.poll(true) {
                 Ok(Action::Exit) => break,

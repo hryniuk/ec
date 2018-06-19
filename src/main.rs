@@ -34,6 +34,6 @@ fn main() {
         process::exit(1);
     });
 
-    let ecc = ec::Ec::new(Rc::new(RefCell::new(ec::mem::Memory::from(&alf))));
+    let mut ecc = ec::Ec::new(Rc::new(RefCell::new(ec::mem::Memory::from(&alf))));
     ecc.run();
 }

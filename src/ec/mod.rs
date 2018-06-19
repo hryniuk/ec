@@ -49,8 +49,8 @@ impl Ec {
         }
     }
 
-    pub fn run(self) -> Result<(), EcError> {
-        self.supervisor.run_with(&self.cpu);
+    pub fn run(&mut self) -> Result<(), EcError> {
+        self.supervisor.run_with(&mut self.cpu);
         Ok(())
     }
 }
