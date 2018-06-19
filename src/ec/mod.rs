@@ -44,7 +44,7 @@ impl Ec {
         Ec {
             ccr: 0,
             mem: mem.clone(),
-            cpu: cpu::Cpu::new(),
+            cpu: cpu::Cpu::new(mem.clone()),
             supervisor: sv::Supervisor::new(mem.clone()),
         }
     }
