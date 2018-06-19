@@ -6,6 +6,7 @@ use std::rc::Rc;
 pub enum Action {
     None,
     Exit,
+    WriteInt(cpu::instruction::Address),
 }
 
 pub struct Supervisor {
@@ -20,6 +21,9 @@ impl Supervisor {
         loop {
             match cpu.poll(true) {
                 Ok(Action::Exit) => break,
+                Ok(Action::WriteInt(addr)) => {
+                    print!("{}", self.mem.borrow().read_word(addr as usize));
+                }
                 Err(e) => break,
                 _ => break,
             }

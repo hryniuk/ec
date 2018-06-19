@@ -1,4 +1,5 @@
-mod instruction;
+// TODO: make it private
+pub mod instruction;
 
 use ec::cpu::instruction::Address;
 use ec::cpu::instruction::Register;
@@ -77,6 +78,7 @@ impl Cpu {
                 let action_id = self.mem.borrow().get(r1 as usize);
                 match action_id {
                     0 => return Ok(sv::Action::Exit),
+                    5 => return Ok(sv::Action::WriteInt(addr)),
                     _ => return Ok(sv::Action::Exit),
                 }
             }
