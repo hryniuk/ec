@@ -1,7 +1,7 @@
 use std;
 
 pub fn usage(name: &String) -> String {
-    format!("Usage:\n\t{} <alf_path>", name)
+    format!("Usage:\n\t{} <alf_path>\n", name)
 }
 
 pub fn get_alf_path(args: &[String]) -> Option<std::path::PathBuf> {
