@@ -1,4 +1,4 @@
-# ec-1
+# ec-1 [![Build Status](https://travis-ci.com/hryniuk/ec.svg?token=hH6LPCLCyUFneJpS1zdy&branch=master)](https://travis-ci.com/hryniuk/ec)
 
 The Educational Computer, Model 1 - project from "Etudes for Programmers".
 
