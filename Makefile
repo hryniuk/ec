@@ -1,13 +1,16 @@
+.PHONY: default
+default: build test
+
+.PHONY: test
+test:
+	cargo test
+
 .PHONY: all
 all: build test doc
 
 .PHONY: build
 build:
 	cargo build
-
-.PHONY: test
-test:
-	cargo test
 
 .PHONY: doc
 doc:
