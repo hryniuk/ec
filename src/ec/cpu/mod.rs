@@ -62,6 +62,7 @@ impl Cpu {
         }
         instruction::Instruction::None
     }
+    /// Single fetch-decode-execute cycle
     pub fn poll(&mut self, trace: bool) -> Result<sv::Action, EcError> {
         if self.ilc % 2 != 0 {
             return Err(EcError::IllegalInstructionAddress);
@@ -76,6 +77,7 @@ impl Cpu {
                 // TODO: consider additional interface for register
                 // value retrieval
                 let action_id = self.mem.borrow().get(r1 as usize);
+                trace!("Supervisor call with id {}", action_id);
                 match action_id {
                     0 => return Ok(sv::Action::Exit),
                     5 => return Ok(sv::Action::WriteInt(addr)),

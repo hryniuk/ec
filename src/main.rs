@@ -7,6 +7,9 @@ extern crate simplelog;
 
 use simplelog::*;
 use std::cell::RefCell;
+use std::fs;
+use std::io;
+use std::io::BufRead;
 use std::rc::Rc;
 
 mod args;
@@ -28,7 +31,24 @@ fn main() {
         process::exit(1);
     });
 
-    let alf = ec::alf::Alf::from_file(&alf_path).unwrap_or_else(|e| {
+    let alf_file = fs::File::open(&alf_path).unwrap_or_else(|e| {
+        error!("Cannot open file {}: {}", alf_path.to_str().unwrap(), e);
+        process::exit(1);
+    });
+
+    let source_lines: Vec<String> = io::BufReader::new(alf_file)
+        .lines()
+        .collect::<Result<Vec<String>, io::Error>>()
+        .unwrap_or_else(|e| {
+            error!(
+                "Cannot read lines from file {}: {}",
+                alf_path.to_str().unwrap(),
+                e
+            );
+            process::exit(1);
+        });
+
+    let alf = ec::alf::Alf::from(source_lines).unwrap_or_else(|e| {
         // TODO: avoid this unwrap in some way
         error!("{}: {}", alf_path.to_str().unwrap(), e);
         process::exit(1);

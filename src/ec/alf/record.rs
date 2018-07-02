@@ -13,16 +13,16 @@ const TRIPLES_INDEX: usize = 4;
 
 /// Record is a basic unit of absolute load file (ALF)
 pub struct Record {
-    sequence_number: u32,
+    pub sequence_number: u32,
     pub data_triples: Vec<DataTriple>,
 }
 
 impl Record {
-    pub fn from(record_line: String) -> Result<Record, Error> {
+    pub fn from(record_line: String) -> Result<Record, String> {
         assert!(record_line.len() > 0);
         // TODO: consider converting string to Vec<Ops>
         if !Record::is_valid(&record_line) {
-            return Err(Error::new(ErrorKind::Other, "invalid record line"));
+            return Err("invalid record line".to_owned());
         }
 
         let sequence_number = Record::read_sequence_number(&record_line).unwrap_or(0);
