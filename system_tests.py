@@ -10,25 +10,24 @@ import sys
 
 def read_out(filepath):
     if filepath == None:
-        return None
+        return ""
 
     with open(filepath, 'r') as f:
-        out = f.read()
-        if len(out) == 0:
-            return None
+        return f.read()
 
 
 def assert_eq_output(expected, output):
-    return expected == output
+    return (expected is None and output is None) or expected == output
 
 
 def run_test(testcase, binary_path, alf_filepath, out_filepath):
-    completed_process = subprocess.run([binary_path, alf_filepath])
-    if assert_eq_output(read_out(out_filepath), completed_process.stdout):
-        print(f"{testcase} ok")
+    out = subprocess.check_output([binary_path, alf_filepath],
+            universal_newlines=True)
+    if assert_eq_output(read_out(out_filepath), out):
+        print("{} ok".format(testcase))
         return 0
     else:
-        print(f"{testcase} fail")
+        print("{} fail".format(testcase))
         return 1
 
 
@@ -82,7 +81,7 @@ def read_paths_from_command_line():
 
 def assert_exists(path):
     if not os.path.exists(path):
-        print(f"{path} doesn't exist")
+        print("{} doesn't exist".format(path))
         sys.exit(1)
     return path
 
