@@ -4,7 +4,6 @@ use std::process;
 #[macro_use]
 extern crate log;
 extern crate simplelog;
-
 use simplelog::*;
 use std::cell::RefCell;
 use std::fs;
@@ -17,13 +16,14 @@ mod ec;
 
 fn init_logger() {
     CombinedLogger::init(vec![
-        TermLogger::new(LevelFilter::Trace, Config::default()).unwrap(),
+        TermLogger::new(LevelFilter::Error, Config::default()).unwrap(),
     ]).unwrap();
 }
 
 fn main() {
     init_logger();
 
+    // use library to parse args
     let args: Vec<String> = env::args().collect();
 
     let alf_path: std::path::PathBuf = args::get_alf_path(&args).unwrap_or_else(|| {
