@@ -62,11 +62,15 @@ impl Cpu {
         }
         instruction::Instruction::None
     }
-    /// Single fetch-decode-execute cycle
-    pub fn poll(&mut self, trace: bool) -> Result<sv::Action, EcError> {
+    fn assert_ilc_valid(&self) -> Result<(), EcError> {
         if self.ilc % 2 != 0 {
             return Err(EcError::IllegalInstructionAddress);
         }
+        Ok(())
+    }
+    /// Single fetch-decode-execute cycle
+    pub fn poll(&mut self, trace: bool) -> Result<sv::Action, EcError> {
+        self.assert_ilc_valid()?;
 
         let next_instr = Cpu::read_instruction(&self);
         if trace {
