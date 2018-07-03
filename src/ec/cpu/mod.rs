@@ -30,7 +30,7 @@ pub struct Cpu {
 
 impl Cpu {
     pub fn new(mem: Rc<RefCell<mem::Memory>>) -> Cpu {
-        Cpu { ilc: 0xa, mem }
+        Cpu { ilc: 0x10, mem }
     }
     fn op_type(op_code: OpCode) -> OpType {
         OpType::Rs
