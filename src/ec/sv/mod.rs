@@ -28,6 +28,7 @@ impl Supervisor {
                 Ok(Action::WriteInt(addr)) => {
                     print!("{}", self.mem.borrow().read_word(addr as usize));
                 }
+                Ok(Action::None) => (),
                 Err(_) => break,
                 _ => break,
             }
