@@ -107,6 +107,7 @@ impl Cpu {
         self.assert_ilc_valid()?;
 
         let next_instr = Cpu::read_instruction(&self);
+        self.ilc += 0x4;
         if trace {
             trace!("{:?}", next_instr);
         }
