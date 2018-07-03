@@ -22,12 +22,15 @@ def assert_eq_output(expected, output):
 
 def run_test(testcase, binary_path, alf_filepath, out_filepath):
     out = subprocess.check_output([binary_path, alf_filepath],
-            universal_newlines=True)
-    if assert_eq_output(read_out(out_filepath), out):
+                                  universal_newlines=True)
+    expected_output = read_out(out_filepath)
+    if assert_eq_output(expected_output, out):
         print("{} ok".format(testcase))
         return 0
     else:
         print("{} fail".format(testcase))
+        print("### ec output:\n{}".format(out))
+        print("### expected output:\n{}".format(expected_output))
         return 1
 
 
