@@ -41,7 +41,7 @@ impl Cpu {
     }
     fn read_op_registers(&self, address: usize) -> (Register, Register) {
         let registers_byte = self.mem.borrow().get(address + REGISTERS_OFFSET);
-        (registers_byte & 0xf0, registers_byte & 0x0f)
+        ((registers_byte & 0xf0) >> 4, registers_byte & 0x0f)
     }
     fn read_op_address(&self, address: usize) -> Address {
         self.mem.borrow().read_word(address + ADDRESS_OFFSET)
