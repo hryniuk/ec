@@ -17,11 +17,16 @@ type IndirectBit = u8;
 
 pub enum OpCodeValue {
     Svc = 0x2e,
+    Li = 0x40,
 }
 
 pub enum OpType {
     Rs,
+    Im,
 }
+
+static RsInstr: &'static [OpCode] = &[OpCodeValue::Svc as u8];
+static ImInstr: &'static [OpCode] = &[OpCodeValue::Li as OpCode];
 
 pub struct Cpu {
     ilc: usize,
@@ -32,8 +37,13 @@ impl Cpu {
     pub fn new(mem: Rc<RefCell<mem::Memory>>) -> Cpu {
         Cpu { ilc: 0x10, mem }
     }
-    fn op_type(op_code: OpCode) -> OpType {
-        OpType::Rs
+    fn op_type(op_code: OpCode) -> Option<OpType> {
+        if RsInstr.contains(&op_code) {
+            return Some(OpType::Rs);
+        } else if ImInstr.contains(&op_code) {
+            return Some(OpType::Im);
+        }
+        None
     }
     fn read_opcode(&self, address: usize) -> (IndirectBit, OpCode) {
         let byte = self.mem.borrow().get(address);
@@ -46,15 +56,39 @@ impl Cpu {
     fn read_op_address(&self, address: usize) -> Address {
         self.mem.borrow().read_word(address + ADDRESS_OFFSET)
     }
+    fn read_r1_and_value(&self, address: usize) -> (Register, i32) {
+        // TODO: add proper asserts
+        let b1 = self.mem.borrow().get(address);
+        let b2 = self.mem.borrow().get(address + 1);
+        let b3 = self.mem.borrow().get(address + 2);
+        let b4 = self.mem.borrow().get(address + 3);
+
+        // TODO: take care of sign extension:
+        // https://en.wikipedia.org/wiki/Sign_extension
+        (
+            (b1 & 0xf0) >> 4,
+            ((((b1 & 0xf) as i32) << 16) | ((b2 as i32) << 8) | b1 as i32),
+        )
+    }
     fn read_instruction(&self) -> instruction::Instruction {
         let (indirect_bit, op_code) = self.read_opcode(self.ilc);
         match Cpu::op_type(op_code) {
-            Rs => {
+            Some(OpType::Rs) => {
                 let (r1, r2) = self.read_op_registers(self.ilc);
+                trace!("RS instruction, r1 = {} r2 = {}", r1, r2);
                 let address = self.read_op_address(self.ilc);
                 match op_code {
                     Svc => {
                         return instruction::Instruction::SupervisorCall(r1, r2, address);
+                    }
+                }
+            }
+            Some(OpType::Im) => {
+                let (r1, value) = self.read_r1_and_value(self.ilc);
+                trace!("IM instruction {} {}", r1, value);
+                match op_code {
+                    Li => {
+                        return instruction::Instruction::LoadImmediate(r1, value);
                     }
                 }
             }
@@ -87,6 +121,9 @@ impl Cpu {
                     5 => return Ok(sv::Action::WriteInt(addr)),
                     _ => return Ok(sv::Action::Exit),
                 }
+            }
+            instruction::Instruction::LoadImmediate(r1, value) => {
+                self.mem.borrow_mut().set(r1 as usize, value as u8);
             }
             instruction::Instruction::None => (),
         }

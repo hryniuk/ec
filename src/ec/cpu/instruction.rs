@@ -5,4 +5,5 @@ pub type Address = u16;
 pub enum Instruction {
     None,
     SupervisorCall(Register, Register, Address),
+    LoadImmediate(Register, i32),
 }
