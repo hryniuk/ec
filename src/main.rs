@@ -1,42 +1,25 @@
-use std::env;
-use std::process;
-
 #[macro_use]
 extern crate log;
 #[macro_use]
 extern crate num_derive;
+extern crate getopts;
 extern crate num_traits;
 extern crate simplelog;
 
-use simplelog::*;
 use std::cell::RefCell;
+use std::env;
 use std::fs;
 use std::io;
 use std::io::BufRead;
+use std::process;
 use std::rc::Rc;
 
 mod args;
 mod ec;
 
-fn init_logger() {
-    CombinedLogger::init(vec![
-        TermLogger::new(LevelFilter::Error, Config::default()).unwrap(),
-    ]).unwrap();
-}
-
-fn main() {
-    init_logger();
-
-    // use library to parse args
-    let args: Vec<String> = env::args().collect();
-
-    let alf_path: std::path::PathBuf = args::get_alf_path(&args).unwrap_or_else(|| {
-        print!("{}", args::usage(&args[0]));
-        process::exit(1);
-    });
-
-    let alf_file = fs::File::open(&alf_path).unwrap_or_else(|e| {
-        error!("Cannot open file {}: {}", alf_path.to_str().unwrap(), e);
+fn read_alf(path: &std::path::PathBuf) -> ec::alf::Alf {
+    let alf_file = fs::File::open(&path).unwrap_or_else(|e| {
+        error!("Cannot open file {}: {}", path.to_str().unwrap(), e);
         process::exit(1);
     });
 
@@ -46,7 +29,7 @@ fn main() {
         .unwrap_or_else(|e| {
             error!(
                 "Cannot read lines from file {}: {}",
-                alf_path.to_str().unwrap(),
+                path.to_str().unwrap(),
                 e
             );
             process::exit(1);
@@ -54,11 +37,17 @@ fn main() {
 
     let alf = ec::alf::Alf::from(source_lines).unwrap_or_else(|e| {
         // TODO: avoid this unwrap in some way
-        error!("{}: {}", alf_path.to_str().unwrap(), e);
+        error!("{}: {}", path.to_str().unwrap(), e);
         process::exit(1);
     });
 
+    return alf;
+}
+
+fn main() {
+    let alf = read_alf(&args::parse(&env::args().collect()));
     let mut ecc = ec::Ec::new(Rc::new(RefCell::new(ec::mem::Memory::from(&alf))));
+
     match ecc.run() {
         Ok(_) => (),
         Err(e) => {

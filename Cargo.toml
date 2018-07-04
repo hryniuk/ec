@@ -5,6 +5,7 @@ authors = ["Łukasz Hryniuk <lukasz.hryniuk@wp.pl>"]
 
 [dependencies]
 byteorder = "1"
+getopts = "*"
 log = "*"
 num-derive = "*"
 num-traits = "*"

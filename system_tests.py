@@ -21,7 +21,7 @@ def assert_eq_output(expected, output):
 
 
 def run_test(testcase, binary_path, alf_filepath, out_filepath):
-    out = subprocess.check_output([binary_path, alf_filepath],
+    out = subprocess.check_output([binary_path, '-f', alf_filepath, '-q'],
                                   universal_newlines=True)
     expected_output = read_out(out_filepath)
     if assert_eq_output(expected_output, out):
