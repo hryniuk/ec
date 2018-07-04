@@ -123,10 +123,12 @@ impl Cpu {
                 }
             }
             instruction::Instruction::LoadImmediate(r1, value) => {
+                // TODO: change u8 to i32 here (new method for memory?)
                 self.mem.borrow_mut().set(r1 as usize, value as u8);
+                return Ok(sv::Action::None);
             }
             instruction::Instruction::None => (),
         }
-        Ok(sv::Action::None)
+        Ok(sv::Action::Exit)
     }
 }
