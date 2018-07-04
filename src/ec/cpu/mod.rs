@@ -47,7 +47,7 @@ impl Cpu {
     }
     fn read_opcode(&self, address: usize) -> (IndirectBit, OpCode) {
         let byte = self.mem.borrow().get(address);
-        (byte & 0x40, byte & 0x7f)
+        (((byte & 0x40) != 0) as IndirectBit, byte & 0x7f)
     }
     fn read_op_registers(&self, address: usize) -> (Register, Register) {
         let registers_byte = self.mem.borrow().get(address + REGISTERS_OFFSET);
@@ -130,5 +130,21 @@ impl Cpu {
             instruction::Instruction::None => (),
         }
         Ok(sv::Action::Exit)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_reads_correctly_opcode() {
+        let mem = Rc::new(RefCell::new(mem::Memory::new()));
+        let cpu = Cpu::new(Rc::clone(&mem));
+        mem.borrow_mut().set(0x10, 0xff);
+        assert_eq!((0x01, 0x7f), cpu.read_opcode(0x10));
+
+        mem.borrow_mut().set(0x20, 0x1b);
+        assert_eq!((0x00, 0x1b), cpu.read_opcode(0x20));
     }
 }
