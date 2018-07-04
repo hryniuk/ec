@@ -1,8 +1,5 @@
 use ec::cpu::instruction;
-use std::error;
-use std::io;
 use std::num;
-use std::path::Path;
 
 pub mod data_triple;
 pub mod record;
@@ -28,7 +25,7 @@ impl Alf {
         true
     }
     pub fn from(mut lines: Vec<String>) -> Result<Alf, String> {
-        let mut start_address: instruction::Address;
+        let start_address: instruction::Address;
 
         match lines.pop() {
             Some(end_record) => {
@@ -42,8 +39,9 @@ impl Alf {
                     Ok(address) => start_address = address,
                     Err(e) => {
                         return Err(format!(
-                            "Cannot read start address from end record: {}",
-                            end_record
+                            "Cannot read start address from end record {}: {}",
+                            end_record,
+                            e
                         ))
                     }
                 }

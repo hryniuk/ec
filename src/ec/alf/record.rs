@@ -1,4 +1,3 @@
-use std::io::{Error, ErrorKind};
 use std::u32;
 use std::vec::Vec;
 

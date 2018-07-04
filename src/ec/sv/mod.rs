@@ -30,7 +30,6 @@ impl Supervisor {
                 }
                 Ok(Action::None) => (),
                 Err(_) => break,
-                _ => break,
             }
         }
     }

@@ -3,7 +3,11 @@ use std::process;
 
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate num_derive;
+extern crate num_traits;
 extern crate simplelog;
+
 use simplelog::*;
 use std::cell::RefCell;
 use std::fs;
@@ -55,5 +59,12 @@ fn main() {
     });
 
     let mut ecc = ec::Ec::new(Rc::new(RefCell::new(ec::mem::Memory::from(&alf))));
-    ecc.run();
+    match ecc.run() {
+        Ok(_) => (),
+        Err(e) => {
+            // TODO: add error msg
+            error!("EC exited with error");
+            process::exit(e as i32);
+        }
+    }
 }

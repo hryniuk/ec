@@ -6,6 +6,7 @@ use ec::cpu::instruction::Register;
 use ec::mem;
 use ec::sv;
 use ec::EcError;
+use num_traits::FromPrimitive;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -15,6 +16,7 @@ const ADDRESS_OFFSET: usize = 2;
 type OpCode = u8;
 type IndirectBit = u8;
 
+#[derive(FromPrimitive)]
 pub enum OpCodeValue {
     Svc = 0x2e,
     Li = 0x40,
@@ -70,25 +72,29 @@ impl Cpu {
         )
     }
     fn read_instruction(&self) -> instruction::Instruction {
-        let (indirect_bit, op_code) = self.read_opcode(self.ilc);
+        let (_indirect_bit, op_code) = self.read_opcode(self.ilc);
         match Cpu::op_type(op_code) {
             Some(OpType::Rs) => {
                 let (r1, r2) = self.read_op_registers(self.ilc + REGISTERS_OFFSET);
                 trace!("RS instruction, r1 = {} r2 = {}", r1, r2);
                 let address = self.read_op_address(self.ilc);
-                match op_code {
-                    Svc => {
+                match FromPrimitive::from_u8(op_code) {
+                    Some(OpCodeValue::Svc) => {
                         return instruction::Instruction::SupervisorCall(r1, r2, address);
                     }
+                    Some(_) => (),
+                    None => (),
                 }
             }
             Some(OpType::Im) => {
                 let (r1, value) = self.read_r1_and_value(self.ilc);
                 trace!("IM instruction {} {}", r1, value);
-                match op_code {
-                    Li => {
+                match FromPrimitive::from_u8(op_code) {
+                    Some(OpCodeValue::Li) => {
                         return instruction::Instruction::LoadImmediate(r1, value);
                     }
+                    Some(_) => (),
+                    None => (),
                 }
             }
             _ => (),
@@ -111,7 +117,7 @@ impl Cpu {
             trace!("{:?}", next_instr);
         }
         match next_instr {
-            instruction::Instruction::SupervisorCall(r1, r2, addr) => {
+            instruction::Instruction::SupervisorCall(r1, _r2, addr) => {
                 // TODO: consider additional interface for register
                 // value retrieval
                 let action_id = self.mem.borrow().get(r1 as usize);
