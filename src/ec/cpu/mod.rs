@@ -50,7 +50,7 @@ impl Cpu {
         (((byte & 0x40) != 0) as IndirectBit, byte & 0x7f)
     }
     fn read_op_registers(&self, address: usize) -> (Register, Register) {
-        let registers_byte = self.mem.borrow().get(address + REGISTERS_OFFSET);
+        let registers_byte = self.mem.borrow().get(address);
         ((registers_byte & 0xf0) >> 4, registers_byte & 0x0f)
     }
     fn read_op_address(&self, address: usize) -> Address {
@@ -73,7 +73,7 @@ impl Cpu {
         let (indirect_bit, op_code) = self.read_opcode(self.ilc);
         match Cpu::op_type(op_code) {
             Some(OpType::Rs) => {
-                let (r1, r2) = self.read_op_registers(self.ilc);
+                let (r1, r2) = self.read_op_registers(self.ilc + REGISTERS_OFFSET);
                 trace!("RS instruction, r1 = {} r2 = {}", r1, r2);
                 let address = self.read_op_address(self.ilc);
                 match op_code {
@@ -146,5 +146,16 @@ mod test {
 
         mem.borrow_mut().set(0x20, 0x1b);
         assert_eq!((0x00, 0x1b), cpu.read_opcode(0x20));
+    }
+
+    #[test]
+    fn test_reads_registers_correctly() {
+        let mem = Rc::new(RefCell::new(mem::Memory::new()));
+        let cpu = Cpu::new(Rc::clone(&mem));
+        mem.borrow_mut().set(0x10, 0x1c);
+        assert_eq!((0x01, 0x0c), cpu.read_op_registers(0x10));
+
+        mem.borrow_mut().set(0x20, 0xe5);
+        assert_eq!((0x0e, 0x05), cpu.read_op_registers(0x20));
     }
 }
