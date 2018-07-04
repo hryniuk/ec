@@ -58,16 +58,15 @@ impl Cpu {
     }
     fn read_r1_and_value(&self, address: usize) -> (Register, i32) {
         // TODO: add proper asserts
-        let b1 = self.mem.borrow().get(address);
-        let b2 = self.mem.borrow().get(address + 1);
-        let b3 = self.mem.borrow().get(address + 2);
-        let b4 = self.mem.borrow().get(address + 3);
+        let b1 = self.mem.borrow().get(address + 1);
+        let b2 = self.mem.borrow().get(address + 2);
+        let b3 = self.mem.borrow().get(address + 3);
 
         // TODO: take care of sign extension:
         // https://en.wikipedia.org/wiki/Sign_extension
         (
             (b1 & 0xf0) >> 4,
-            ((((b1 & 0xf) as i32) << 16) | ((b2 as i32) << 8) | b1 as i32),
+            ((((b1 & 0xf) as i32) << 16) | ((b2 as i32) << 8) | b3 as i32),
         )
     }
     fn read_instruction(&self) -> instruction::Instruction {
