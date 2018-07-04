@@ -26,7 +26,7 @@ impl Supervisor {
             match cpu.poll(true) {
                 Ok(Action::Exit) => break,
                 Ok(Action::WriteInt(addr)) => {
-                    print!("{}", self.mem.borrow().read_word(addr as usize));
+                    println!("{}", self.mem.borrow().read_word(addr as usize));
                 }
                 Ok(Action::None) => (),
                 Err(_) => break,
