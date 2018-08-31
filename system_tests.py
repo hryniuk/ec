@@ -8,7 +8,7 @@ import subprocess
 import sys
 
 
-def read_out(filepath):
+def read(filepath):
     if filepath == None:
         return ""
 
@@ -20,10 +20,12 @@ def assert_eq_output(expected, output):
     return (expected is None and output is None) or expected == output
 
 
-def run_test(testcase, binary_path, alf_filepath, out_filepath):
+def run_test(testcase, binary_path, alf_filepath, in_filepath, out_filepath):
+    input = read(in_filepath)
     out = subprocess.check_output([binary_path, '-f', alf_filepath, '-q'],
+                                  input=input,
                                   universal_newlines=True)
-    expected_output = read_out(out_filepath)
+    expected_output = read(out_filepath)
     if assert_eq_output(expected_output, out):
         print("{} ok".format(testcase))
         return 0
@@ -38,29 +40,31 @@ def testcase_name(filepath):
     return os.path.splitext(os.path.basename(filepath))[0]
 
 
-def generate_tests(alfs, outs):
+def generate_tests(alfs, ins, outs):
     alf_by_testcase = {testcase_name(path): path for path in alfs}
+    in_by_testcase = {testcase_name(path): path for path in ins}
     out_by_testcase = {testcase_name(path): path for path in outs}
 
     for testcase, alf in alf_by_testcase.items():
-        yield testcase, alf, out_by_testcase.get(testcase)
+        yield testcase, alf, in_by_testcase.get(testcase), out_by_testcase.get(testcase)
 
 
 def main(binary_path, test_files_dir):
-    alf_dir, out_dir = map(assert_exists,
+    alf_dir, in_dir, out_dir = map(assert_exists,
                            map(lambda x: os.path.join(test_files_dir, x),
-                               ('alf', 'out')))
+                               ('alf', 'in', 'out')))
 
     failed = 0
 
-    for testcase, alf, out in generate_tests(
+    for testcase, alf, in_, out in generate_tests(
             glob.glob(os.path.join(alf_dir, '*.alf')),
+            glob.glob(os.path.join(in_dir, '*.in')),
             glob.glob(os.path.join(out_dir, '*.out'))):
         if out is None:
             print("error: missing out file for {testcase}")
             continue
 
-        failed += run_test(testcase, binary_path, alf, out)
+        failed += run_test(testcase, binary_path, alf, in_, out)
 
     if failed > 0:
         sys.exit(1)
