@@ -40,8 +40,7 @@ impl Alf {
                     Err(e) => {
                         return Err(format!(
                             "Cannot read start address from end record {}: {}",
-                            end_record,
-                            e
+                            end_record, e
                         ))
                     }
                 }

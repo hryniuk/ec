@@ -2,6 +2,8 @@
 extern crate log;
 #[macro_use]
 extern crate num_derive;
+#[macro_use]
+extern crate text_io;
 extern crate getopts;
 extern crate num_traits;
 extern crate simplelog;

@@ -31,10 +31,10 @@ impl Supervisor {
                 Ok(Action::ReadInt(addr)) => {
                     let read_value: i32 = read!();
                     self.mem.borrow_mut().write_word(addr as usize, read_value);
-                },
+                }
                 Ok(Action::WriteInt(addr)) => {
                     println!("{}", self.mem.borrow().read_word(addr as usize));
-                },
+                }
                 Ok(Action::None) => (),
                 Err(_) => break,
             }

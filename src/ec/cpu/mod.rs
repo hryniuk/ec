@@ -56,7 +56,8 @@ impl Cpu {
         ((registers_byte & 0xf0) >> 4, registers_byte & 0x0f)
     }
     fn read_op_address(&self, address: usize) -> Address {
-        self.mem.borrow().read_word(address + ADDRESS_OFFSET)
+        ((self.mem.borrow().get(address + ADDRESS_OFFSET) as Address)
+            << 8) + (self.mem.borrow().get(address + ADDRESS_OFFSET + 1) as Address)
     }
     fn read_r1_and_value(&self, address: usize) -> (Register, i32) {
         // TODO: add proper asserts
@@ -124,6 +125,7 @@ impl Cpu {
                 trace!("Supervisor call with id {}", action_id);
                 match action_id {
                     0 => return Ok(sv::Action::Exit),
+                    1 => return Ok(sv::Action::ReadInt(addr)),
                     5 => return Ok(sv::Action::WriteInt(addr)),
                     _ => return Ok(sv::Action::Exit),
                 }
