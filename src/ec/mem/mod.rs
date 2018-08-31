@@ -6,6 +6,8 @@ pub struct Memory {
     mem: [u8; SIZE],
 }
 
+/// Implementation assumes each word consists of four internal
+/// EC characters
 impl Memory {
     pub fn new() -> Memory {
         Memory { mem: [0; SIZE] }
@@ -29,8 +31,18 @@ impl Memory {
         self.mem[address] = value;
     }
 
-    pub fn read_word(&self, address: usize) -> u16 {
-        ((self.mem[address] as u16) << 8) | self.mem[address + 1] as u16
+    pub fn read_word(&self, address: usize) -> i32 {
+        ((self.mem[address] as i32) << 24)
+            + ((self.mem[address + 1] as i32) << 16)
+            + ((self.mem[address + 2] as i32) << 8)
+            + (self.mem[address + 3] as i32)
+    }
+
+    pub fn write_word(&mut self, address: usize, value: i32) {
+        self.mem[address] = (value >> 24) as u8;
+        self.mem[address + 1] = ((value >> 16) & 0xff) as u8;
+        self.mem[address + 2] = ((value >> 8) & 0xff) as u8;
+        self.mem[address + 3] = (value & 0xff) as u8;
     }
 
     pub fn get_gpr(&self, index: usize) -> u32 {
@@ -93,14 +105,12 @@ mod test {
     }
 
     #[test]
-    fn test_returns_valid_word_value() {
+    fn test_read_written_value_from_word() {
         let mut memory: Memory = Memory::new();
         let address = 0x70;
-        let expected_value = 0x4020;
+        let expected_value = -i32::pow(2, 30);
 
-        assert_eq!(0, memory.get(address));
-        memory.set(address, 0x40);
-        memory.set(address + 1, 0x20);
+        memory.write_word(address, expected_value);
         assert_eq!(expected_value, memory.read_word(address));
     }
 }
