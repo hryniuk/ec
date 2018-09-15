@@ -21,6 +21,7 @@ type IndirectBit = u8;
 pub enum OpCodeValue {
     L = 0x20,
     Svc = 0x2e,
+    A = 0x30,
     Li = 0x40,
 }
 
@@ -29,7 +30,11 @@ pub enum OpType {
     Im,
 }
 
-static RsInstr: &'static [OpCode] = &[OpCodeValue::L as u8, OpCodeValue::Svc as u8];
+static RsInstr: &'static [OpCode] = &[
+    OpCodeValue::L as u8,
+    OpCodeValue::Svc as u8,
+    OpCodeValue::A as u8,
+];
 static ImInstr: &'static [OpCode] = &[OpCodeValue::Li as OpCode];
 
 pub struct Cpu {
@@ -84,12 +89,18 @@ impl Cpu {
                 let (r1, r2) = self.read_op_registers(self.ilc + REGISTERS_OFFSET);
                 trace!("RS instruction, r1 = {} r2 = {}", r1, r2);
                 let address = self.read_op_address(self.ilc);
+                // TODO: write a macro to handle these patterns
+                // e.g. Match(OpCodeValue::L, instruction::Instruction::Load)
+                // that will pass proper arguments to them
                 match FromPrimitive::from_u8(op_code) {
                     Some(OpCodeValue::L) => {
                         return instruction::Instruction::Load(r1, r2, address);
                     }
                     Some(OpCodeValue::Svc) => {
                         return instruction::Instruction::SupervisorCall(r1, r2, address);
+                    }
+                    Some(OpCodeValue::A) => {
+                        return instruction::Instruction::Add(r1, r2, address);
                     }
                     Some(_) => (),
                     None => (),
@@ -128,7 +139,7 @@ impl Cpu {
         match next_instr {
             instruction::Instruction::Load(r1, _r2, addr) => {
                 let value = self.mem.borrow().read_word(addr as usize);
-                self.mem.borrow_mut().write_word(r1 as usize, value);
+                self.mem.borrow_mut().write_reg(r1 as usize, value);
                 return Ok(sv::Action::None);
             }
             instruction::Instruction::SupervisorCall(r1, _r2, addr) => {
@@ -142,6 +153,13 @@ impl Cpu {
                     5 => return Ok(sv::Action::WriteInt(addr)),
                     _ => return Ok(sv::Action::Exit),
                 }
+            }
+            instruction::Instruction::Add(r1, _r2, addr) => {
+                // TODO: compare sum to 0 and set CCR
+                let result = self.mem.borrow().read_reg(r1 as usize)
+                    + self.mem.borrow().read_word(addr as usize);
+                self.mem.borrow_mut().write_reg(r1 as usize, result);
+                return Ok(sv::Action::None);
             }
             instruction::Instruction::LoadImmediate(r1, value) => {
                 // TODO: change u8 to i32 here (new method for memory?)

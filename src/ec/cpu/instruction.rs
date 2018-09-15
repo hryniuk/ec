@@ -10,5 +10,6 @@ pub enum Instruction {
     /// The first register is loaded with the word at the effective address
     Load(Register, Register, Address),
     SupervisorCall(Register, Register, Address),
+    Add(Register, Register, Address),
     LoadImmediate(Register, i32),
 }
