@@ -55,9 +55,12 @@ impl Cpu {
         let registers_byte = self.mem.borrow().get(address);
         ((registers_byte & 0xf0) >> 4, registers_byte & 0x0f)
     }
+    // TODO: extend it to the different algorithms of calculating
+    // effective address. For now it corresponds to the situation, when
+    // indirect bit is 0 and index register designator (bits 12-15) is 0
     fn read_op_address(&self, address: usize) -> Address {
-        ((self.mem.borrow().get(address + ADDRESS_OFFSET) as Address)
-            << 8) + (self.mem.borrow().get(address + ADDRESS_OFFSET + 1) as Address)
+        ((self.mem.borrow().get(address + ADDRESS_OFFSET) as Address) << 8)
+            + (self.mem.borrow().get(address + ADDRESS_OFFSET + 1) as Address)
     }
     fn read_r1_and_value(&self, address: usize) -> (Register, i32) {
         // TODO: add proper asserts

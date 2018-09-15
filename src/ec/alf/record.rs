@@ -71,7 +71,8 @@ impl Record {
         (record_line[1..]
             .chars()
             .map(|c| c.to_digit(16).unwrap())
-            .sum::<u32>()) % 16
+            .sum::<u32>())
+            % 16
     }
 
     fn is_valid(record_line: &String) -> bool {
