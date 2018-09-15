@@ -17,7 +17,7 @@ def read(filepath):
 
 
 def assert_eq_output(expected, output):
-    return (expected is None and output is None) or expected == output
+    return (expected is None and output is None) or expected.strip() == output.strip()
 
 
 def run_test(testcase, binary_path, alf_filepath, in_filepath, out_filepath):
