@@ -24,7 +24,7 @@ impl Memory {
     }
 
     pub fn get(&self, address: usize) -> u8 {
-        trace!("reading memory[{}]", address);
+        trace!("reading memory[{}] = {}", address, self.mem[address]);
         self.mem[address]
     }
 
@@ -34,11 +34,12 @@ impl Memory {
     }
 
     pub fn read_word(&self, address: usize) -> i32 {
-        trace!("reading word at {}", address);
-        ((self.mem[address] as i32) << 24)
+        let value: i32 = ((self.mem[address] as i32) << 24)
             + ((self.mem[address + 1] as i32) << 16)
             + ((self.mem[address + 2] as i32) << 8)
-            + (self.mem[address + 3] as i32)
+            + (self.mem[address + 3] as i32);
+        trace!("reading word at {} = {}", address, value);
+        value
     }
 
     pub fn write_word(&mut self, address: usize, value: i32) {

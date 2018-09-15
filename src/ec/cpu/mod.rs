@@ -16,8 +16,10 @@ const ADDRESS_OFFSET: usize = 2;
 type OpCode = u8;
 type IndirectBit = u8;
 
+// NOTE: remember to add this value to proper *Instr array below
 #[derive(FromPrimitive)]
 pub enum OpCodeValue {
+    L = 0x20,
     Svc = 0x2e,
     Li = 0x40,
 }
@@ -27,7 +29,7 @@ pub enum OpType {
     Im,
 }
 
-static RsInstr: &'static [OpCode] = &[OpCodeValue::Svc as u8];
+static RsInstr: &'static [OpCode] = &[OpCodeValue::L as u8, OpCodeValue::Svc as u8];
 static ImInstr: &'static [OpCode] = &[OpCodeValue::Li as OpCode];
 
 pub struct Cpu {
@@ -83,6 +85,9 @@ impl Cpu {
                 trace!("RS instruction, r1 = {} r2 = {}", r1, r2);
                 let address = self.read_op_address(self.ilc);
                 match FromPrimitive::from_u8(op_code) {
+                    Some(OpCodeValue::L) => {
+                        return instruction::Instruction::Load(r1, r2, address);
+                    }
                     Some(OpCodeValue::Svc) => {
                         return instruction::Instruction::SupervisorCall(r1, r2, address);
                     }
@@ -121,6 +126,11 @@ impl Cpu {
             trace!("{:?}", next_instr);
         }
         match next_instr {
+            instruction::Instruction::Load(r1, _r2, addr) => {
+                let value = self.mem.borrow().read_word(addr as usize);
+                self.mem.borrow_mut().write_word(r1 as usize, value);
+                return Ok(sv::Action::None);
+            }
             instruction::Instruction::SupervisorCall(r1, _r2, addr) => {
                 // TODO: consider additional interface for register
                 // value retrieval
