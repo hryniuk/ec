@@ -24,14 +24,17 @@ impl Memory {
     }
 
     pub fn get(&self, address: usize) -> u8 {
+        trace!("reading memory[{}]", address);
         self.mem[address]
     }
 
     pub fn set(&mut self, address: usize, value: u8) {
+        trace!("setting memory[{}] to {}", address, value);
         self.mem[address] = value;
     }
 
     pub fn read_word(&self, address: usize) -> i32 {
+        trace!("reading word at {}", address);
         ((self.mem[address] as i32) << 24)
             + ((self.mem[address + 1] as i32) << 16)
             + ((self.mem[address + 2] as i32) << 8)
@@ -39,6 +42,7 @@ impl Memory {
     }
 
     pub fn write_word(&mut self, address: usize, value: i32) {
+        trace!("setting word at {} to {}", address, value);
         self.mem[address] = (value >> 24) as u8;
         self.mem[address + 1] = ((value >> 16) & 0xff) as u8;
         self.mem[address + 2] = ((value >> 8) & 0xff) as u8;
