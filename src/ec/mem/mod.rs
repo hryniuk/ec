@@ -33,6 +33,14 @@ impl Memory {
         self.mem[address] = value;
     }
 
+    pub fn read_reg(&self, address: usize) -> i32 {
+        self.read_word(address * 4)
+    }
+
+    pub fn write_reg(&mut self, address: usize, value: i32) {
+        self.write_word(address * 4, value);
+    }
+
     pub fn read_word(&self, address: usize) -> i32 {
         let value: i32 = ((self.mem[address] as i32) << 24)
             + ((self.mem[address + 1] as i32) << 16)
