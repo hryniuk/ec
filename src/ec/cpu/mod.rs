@@ -44,7 +44,7 @@ pub struct Cpu {
 
 impl Cpu {
     pub fn new(mem: Rc<RefCell<mem::Memory>>) -> Cpu {
-        Cpu { ilc: 0x10, mem }
+        Cpu { ilc: 0x40, mem }
     }
     fn op_type(op_code: OpCode) -> Option<OpType> {
         if RsInstr.contains(&op_code) {
@@ -83,6 +83,7 @@ impl Cpu {
         )
     }
     fn read_instruction(&self) -> instruction::Instruction {
+        trace!("Reading next instruction at {}", self.ilc);
         let (_indirect_bit, op_code) = self.read_opcode(self.ilc);
         match Cpu::op_type(op_code) {
             Some(OpType::Rs) => {
