@@ -146,7 +146,7 @@ impl Cpu {
             instruction::Instruction::SupervisorCall(r1, _r2, addr) => {
                 // TODO: consider additional interface for register
                 // value retrieval
-                let action_id = self.mem.borrow().get(r1 as usize);
+                let action_id = self.mem.borrow().read_word(r1 as usize);
                 trace!("Supervisor call with id {}", action_id);
                 match action_id {
                     0 => return Ok(sv::Action::Exit),
@@ -163,8 +163,7 @@ impl Cpu {
                 return Ok(sv::Action::None);
             }
             instruction::Instruction::LoadImmediate(r1, value) => {
-                // TODO: change u8 to i32 here (new method for memory?)
-                self.mem.borrow_mut().set(r1 as usize, value as u8);
+                self.mem.borrow_mut().write_reg(r1 as usize, value as i32);
                 return Ok(sv::Action::None);
             }
             instruction::Instruction::None => (),
