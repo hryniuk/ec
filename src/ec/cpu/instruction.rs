@@ -11,5 +11,8 @@ pub enum Instruction {
     Load(Register, Register, Address),
     SupervisorCall(Register, Register, Address),
     Add(Register, Register, Address),
+    Subtract(Register, Register, Address),
+    Multiply(Register, Register, Address),
+    Divide(Register, Register, Address),
     LoadImmediate(Register, i32),
 }

@@ -22,6 +22,9 @@ pub enum OpCodeValue {
     L = 0x20,
     Svc = 0x2e,
     A = 0x30,
+    S = 0x31,
+    M = 0x33,
+    D = 0x34,
     Li = 0x40,
 }
 
@@ -34,6 +37,9 @@ static RsInstr: &'static [OpCode] = &[
     OpCodeValue::L as u8,
     OpCodeValue::Svc as u8,
     OpCodeValue::A as u8,
+    OpCodeValue::S as u8,
+    OpCodeValue::M as u8,
+    OpCodeValue::D as u8,
 ];
 static ImInstr: &'static [OpCode] = &[OpCodeValue::Li as OpCode];
 
@@ -103,6 +109,15 @@ impl Cpu {
                     Some(OpCodeValue::A) => {
                         return instruction::Instruction::Add(r1, r2, address);
                     }
+                    Some(OpCodeValue::S) => {
+                        return instruction::Instruction::Subtract(r1, r2, address);
+                    }
+                    Some(OpCodeValue::M) => {
+                        return instruction::Instruction::Multiply(r1, r2, address);
+                    }
+                    Some(OpCodeValue::D) => {
+                        return instruction::Instruction::Divide(r1, r2, address);
+                    }
                     Some(_) => (),
                     None => (),
                 }
@@ -159,6 +174,27 @@ impl Cpu {
                 // TODO: compare sum to 0 and set CCR
                 let result = self.mem.borrow().read_reg(r1 as usize)
                     + self.mem.borrow().read_word(addr as usize);
+                self.mem.borrow_mut().write_reg(r1 as usize, result);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::Subtract(r1, _r2, addr) => {
+                // TODO: compare sum to 0 and set CCR
+                let result = self.mem.borrow().read_reg(r1 as usize)
+                    - self.mem.borrow().read_word(addr as usize);
+                self.mem.borrow_mut().write_reg(r1 as usize, result);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::Multiply(r1, _r2, addr) => {
+                // TODO: compare sum to 0 and set CCR
+                let result = self.mem.borrow().read_reg(r1 as usize)
+                    * self.mem.borrow().read_word(addr as usize);
+                self.mem.borrow_mut().write_reg(r1 as usize, result);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::Divide(r1, _r2, addr) => {
+                // TODO: compare sum to 0 and set CCR
+                let result = self.mem.borrow().read_reg(r1 as usize)
+                    / self.mem.borrow().read_word(addr as usize);
                 self.mem.borrow_mut().write_reg(r1 as usize, result);
                 return Ok(sv::Action::None);
             }
