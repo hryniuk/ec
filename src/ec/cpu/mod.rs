@@ -20,6 +20,10 @@ type IndirectBit = u8;
 #[derive(FromPrimitive)]
 pub enum OpCodeValue {
     L = 0x20,
+    And = 0x24,
+    Or = 0x25,
+    Xor = 0x26,
+    Not = 0x27,
     Svc = 0x2e,
     A = 0x30,
     S = 0x31,
@@ -36,6 +40,10 @@ pub enum OpType {
 static RsInstr: &'static [OpCode] = &[
     OpCodeValue::L as u8,
     OpCodeValue::Svc as u8,
+    OpCodeValue::And as u8,
+    OpCodeValue::Or as u8,
+    OpCodeValue::Xor as u8,
+    OpCodeValue::Not as u8,
     OpCodeValue::A as u8,
     OpCodeValue::S as u8,
     OpCodeValue::M as u8,
@@ -106,6 +114,18 @@ impl Cpu {
                     Some(OpCodeValue::Svc) => {
                         return instruction::Instruction::SupervisorCall(r1, r2, address);
                     }
+                    Some(OpCodeValue::And) => {
+                        return instruction::Instruction::And(r1, r2, address);
+                    }
+                    Some(OpCodeValue::Or) => {
+                        return instruction::Instruction::Or(r1, r2, address);
+                    }
+                    Some(OpCodeValue::Xor) => {
+                        return instruction::Instruction::Xor(r1, r2, address);
+                    }
+                    Some(OpCodeValue::Not) => {
+                        return instruction::Instruction::Not(r1, r2, address);
+                    }
                     Some(OpCodeValue::A) => {
                         return instruction::Instruction::Add(r1, r2, address);
                     }
@@ -169,6 +189,33 @@ impl Cpu {
                     5 => return Ok(sv::Action::WriteInt(addr)),
                     _ => return Ok(sv::Action::Exit),
                 }
+            }
+            instruction::Instruction::And(r1, _r2, addr) => {
+                // TODO: set proper CCR bits
+                let result = self.mem.borrow().read_reg(r1 as usize)
+                    & self.mem.borrow().read_word(addr as usize);
+                self.mem.borrow_mut().write_reg(r1 as usize, result);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::Or(r1, _r2, addr) => {
+                // TODO: set proper CCR bits
+                let result = self.mem.borrow().read_reg(r1 as usize)
+                    | self.mem.borrow().read_word(addr as usize);
+                self.mem.borrow_mut().write_reg(r1 as usize, result);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::Xor(r1, _r2, addr) => {
+                // TODO: set proper CCR bits
+                let result = self.mem.borrow().read_reg(r1 as usize)
+                    ^ self.mem.borrow().read_word(addr as usize);
+                self.mem.borrow_mut().write_reg(r1 as usize, result);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::Not(r1, _r2, addr) => {
+                // TODO: set proper CCR bits
+                let result = !self.mem.borrow().read_word(addr as usize);
+                self.mem.borrow_mut().write_reg(r1 as usize, result);
+                return Ok(sv::Action::None);
             }
             instruction::Instruction::Add(r1, _r2, addr) => {
                 // TODO: compare sum to 0 and set CCR
