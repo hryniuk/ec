@@ -172,6 +172,11 @@ impl Cpu {
         if trace {
             trace!("{:?}", next_instr);
         }
+        // TODO: Match instruction format (RR/RS/IM/CH) instead of type,
+        // cause handling one instruction format is in most cases the same.
+        // Next, instruction types can me map to functions, e.g.
+        // A => |a, b| a + b;
+        // S => |a, b| a - b;
         match next_instr {
             instruction::Instruction::Load(r1, _r2, addr) => {
                 let value = self.mem.borrow().read_word(addr as usize);
