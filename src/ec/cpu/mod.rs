@@ -20,6 +20,7 @@ type IndirectBit = u8;
 #[derive(FromPrimitive)]
 pub enum OpCodeValue {
     L = 0x20,
+    Swap = 0x23,
     And = 0x24,
     Or = 0x25,
     Xor = 0x26,
@@ -39,6 +40,7 @@ pub enum OpType {
 
 static RsInstr: &'static [OpCode] = &[
     OpCodeValue::L as u8,
+    OpCodeValue::Swap as u8,
     OpCodeValue::Svc as u8,
     OpCodeValue::And as u8,
     OpCodeValue::Or as u8,
@@ -111,6 +113,9 @@ impl Cpu {
                     Some(OpCodeValue::L) => {
                         return instruction::Instruction::Load(r1, r2, address);
                     }
+                    Some(OpCodeValue::Swap) => {
+                        return instruction::Instruction::Swap(r1, r2, address);
+                    }
                     Some(OpCodeValue::Svc) => {
                         return instruction::Instruction::SupervisorCall(r1, r2, address);
                     }
@@ -181,6 +186,18 @@ impl Cpu {
             instruction::Instruction::Load(r1, _r2, addr) => {
                 let value = self.mem.borrow().read_word(addr as usize);
                 self.mem.borrow_mut().write_reg(r1 as usize, value);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::Swap(r1, _r2, addr) => {
+                // TODO: set proper CCR bits
+                let r1_value = self.mem.borrow().read_reg(r1 as usize);
+                let swap_value = self.mem.borrow().read_word(addr as usize);
+                debug!(
+                    "running swap instruction with {} ({} reg) and {} ({} addr)",
+                    r1_value, r1, swap_value, addr
+                );
+                self.mem.borrow_mut().write_reg(r1 as usize, swap_value);
+                self.mem.borrow_mut().write_word(addr as usize, r1_value);
                 return Ok(sv::Action::None);
             }
             instruction::Instruction::SupervisorCall(r1, _r2, addr) => {

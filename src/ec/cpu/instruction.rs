@@ -9,6 +9,7 @@ pub enum Instruction {
     None,
     /// The first register is loaded with the word at the effective address
     Load(Register, Register, Address),
+    Swap(Register, Register, Address),
     SupervisorCall(Register, Register, Address),
     And(Register, Register, Address),
     Or(Register, Register, Address),
