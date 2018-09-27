@@ -20,4 +20,6 @@ pub enum Instruction {
     Multiply(Register, Register, Address),
     Divide(Register, Register, Address),
     LoadImmediate(Register, i32),
+    Min(Register, Register, Address),
+    Max(Register, Register, Address),
 }

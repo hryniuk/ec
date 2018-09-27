@@ -8,6 +8,7 @@ use ec::sv;
 use ec::EcError;
 use num_traits::FromPrimitive;
 use std::cell::RefCell;
+use std::cmp;
 use std::rc::Rc;
 
 const REGISTERS_OFFSET: usize = 1;
@@ -31,6 +32,8 @@ pub enum OpCodeValue {
     M = 0x33,
     D = 0x34,
     Li = 0x40,
+    Min = 0x7a,
+    Max = 0x7b,
 }
 
 pub enum OpType {
@@ -50,6 +53,8 @@ static RsInstr: &'static [OpCode] = &[
     OpCodeValue::S as u8,
     OpCodeValue::M as u8,
     OpCodeValue::D as u8,
+    OpCodeValue::Min as u8,
+    OpCodeValue::Max as u8,
 ];
 static ImInstr: &'static [OpCode] = &[OpCodeValue::Li as OpCode];
 
@@ -142,6 +147,12 @@ impl Cpu {
                     }
                     Some(OpCodeValue::D) => {
                         return instruction::Instruction::Divide(r1, r2, address);
+                    }
+                    Some(OpCodeValue::Min) => {
+                        return instruction::Instruction::Min(r1, r2, address);
+                    }
+                    Some(OpCodeValue::Max) => {
+                        return instruction::Instruction::Max(r1, r2, address);
                     }
                     Some(_) => (),
                     None => (),
@@ -269,6 +280,22 @@ impl Cpu {
             }
             instruction::Instruction::LoadImmediate(r1, value) => {
                 self.mem.borrow_mut().write_reg(r1 as usize, value as i32);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::Min(r1, _r2, addr) => {
+                let r1_value = self.mem.borrow().read_reg(r1 as usize);
+                let addr_value = self.mem.borrow().read_word(addr as usize);
+                self.mem
+                    .borrow_mut()
+                    .write_reg(r1 as usize, cmp::min(r1_value, addr_value) as i32);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::Max(r1, _r2, addr) => {
+                let r1_value = self.mem.borrow().read_reg(r1 as usize);
+                let addr_value = self.mem.borrow().read_word(addr as usize);
+                self.mem
+                    .borrow_mut()
+                    .write_reg(r1 as usize, cmp::max(r1_value, addr_value) as i32);
                 return Ok(sv::Action::None);
             }
             instruction::Instruction::None => (),
