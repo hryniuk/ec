@@ -219,7 +219,9 @@ impl Cpu {
                 match action_id {
                     0 => return Ok(sv::Action::Exit),
                     1 => return Ok(sv::Action::ReadInt(addr)),
+                    3 => return Ok(sv::Action::ReadChar(addr)),
                     5 => return Ok(sv::Action::WriteInt(addr)),
+                    7 => return Ok(sv::Action::WriteChar(addr)),
                     _ => return Ok(sv::Action::Exit),
                 }
             }
