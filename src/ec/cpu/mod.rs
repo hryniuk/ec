@@ -20,6 +20,8 @@ type IndirectBit = u8;
 // NOTE: remember to add this value to proper *Instr array below
 #[derive(FromPrimitive)]
 pub enum OpCodeValue {
+    Lr = 0x00,
+    Str = 0x02,
     L = 0x20,
     Swap = 0x23,
     And = 0x24,
@@ -37,10 +39,12 @@ pub enum OpCodeValue {
 }
 
 pub enum OpType {
+    Rr,
     Rs,
     Im,
 }
 
+static RrInstr: &'static [OpCode] = &[OpCodeValue::Lr as OpCode, OpCodeValue::Str as OpCode];
 static RsInstr: &'static [OpCode] = &[
     OpCodeValue::L as u8,
     OpCodeValue::Swap as u8,
@@ -68,7 +72,9 @@ impl Cpu {
         Cpu { ilc: 0x40, mem }
     }
     fn op_type(op_code: OpCode) -> Option<OpType> {
-        if RsInstr.contains(&op_code) {
+        if RrInstr.contains(&op_code) {
+            return Some(OpType::Rr);
+        } else if RsInstr.contains(&op_code) {
             return Some(OpType::Rs);
         } else if ImInstr.contains(&op_code) {
             return Some(OpType::Im);
@@ -107,6 +113,34 @@ impl Cpu {
         trace!("Reading next instruction at {}", self.ilc);
         let (_indirect_bit, op_code) = self.read_opcode(self.ilc);
         match Cpu::op_type(op_code) {
+            Some(OpType::Rr) => {
+                let (r1, r2) = self.read_op_registers(self.ilc + REGISTERS_OFFSET);
+                trace!("RR instruction {} {}", r1, r2);
+                match FromPrimitive::from_u8(op_code) {
+                    // TODO: remove this special case and handle program end properly
+                    // 1) treat "program" ALF and "memory" ALF differently and mark program
+                    //    bytes in memory (so execution will continue as long as next instruction
+                    //    is within marked space)
+                    // 2) add some special combination of bytes to mark end of program (vulnerable
+                    //    to, e.g. jumps)
+                    // 3) add a separate memory for a program's ALF with the same size a program
+                    //    (allocated after loading ALF)
+                    // 4) save address of the last byte of the read program (which should be last?
+                    //    with the highest address or last read (is it always the same?)) and
+                    //    exit on reaching it
+                    Some(OpCodeValue::Lr) => {
+                        if r1 == 0 && r2 == 0 {
+                            return instruction::Instruction::None;
+                        }
+                        return instruction::Instruction::LoadRegister(r1, r2);
+                    }
+                    Some(OpCodeValue::Str) => {
+                        return instruction::Instruction::StoreRegister(r1, r2);
+                    }
+                    Some(_) => (),
+                    None => (),
+                }
+            }
             Some(OpType::Rs) => {
                 let (r1, r2) = self.read_op_registers(self.ilc + REGISTERS_OFFSET);
                 trace!("RS instruction, r1 = {} r2 = {}", r1, r2);
@@ -184,7 +218,19 @@ impl Cpu {
         self.assert_ilc_valid()?;
 
         let next_instr = Cpu::read_instruction(&self);
-        self.ilc += 0x4;
+        let (_indirect_bit, op_code) = self.read_opcode(self.ilc);
+        // TODO: it's a tricky hack, that depends on assumption that
+        // ilc is only changed in this place and not in any other method
+        // ilc should be encapsulated and put in some structure taking care
+        // of the full information about next instruction
+        match Cpu::op_type(op_code) {
+            Some(OpType::Rr) => {
+                self.ilc += 0x2;
+            }
+            _ => {
+                self.ilc += 0x4;
+            }
+        }
         if trace {
             trace!("{:?}", next_instr);
         }
@@ -194,6 +240,28 @@ impl Cpu {
         // A => |a, b| a + b;
         // S => |a, b| a - b;
         match next_instr {
+            // TODO: add indirect bit support
+            instruction::Instruction::LoadRegister(r1, r2) => {
+                trace!(
+                    "running LoadRegister instruction with r1 = {} r2 = {}",
+                    r1,
+                    r2
+                );
+                let value = self.mem.borrow().read_reg(r2 as usize);
+                self.mem.borrow_mut().write_reg(r1 as usize, value);
+                return Ok(sv::Action::None);
+            }
+            // TODO: add indirect bit support
+            instruction::Instruction::StoreRegister(r1, r2) => {
+                trace!(
+                    "running StoreRegister instruction with r1 = {} r2 = {}",
+                    r1,
+                    r2
+                );
+                let value = self.mem.borrow().read_reg(r1 as usize);
+                self.mem.borrow_mut().write_reg(r2 as usize, value);
+                return Ok(sv::Action::None);
+            }
             instruction::Instruction::Load(r1, _r2, addr) => {
                 let value = self.mem.borrow().read_word(addr as usize);
                 self.mem.borrow_mut().write_reg(r1 as usize, value);

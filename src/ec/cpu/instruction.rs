@@ -4,9 +4,12 @@ pub type Address = u16;
 // TODO: consider splitting them into different types
 // (RR/IM/RSCH)
 /// CPU Instruction
+/// TODO: add support for indirect bit
 #[derive(Debug)]
 pub enum Instruction {
     None,
+    LoadRegister(Register, Register),
+    StoreRegister(Register, Register),
     /// The first register is loaded with the word at the effective address
     Load(Register, Register, Address),
     Swap(Register, Register, Address),
