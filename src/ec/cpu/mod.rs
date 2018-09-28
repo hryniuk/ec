@@ -214,7 +214,7 @@ impl Cpu {
             instruction::Instruction::SupervisorCall(r1, _r2, addr) => {
                 // TODO: consider additional interface for register
                 // value retrieval
-                let action_id = self.mem.borrow().read_word(r1 as usize);
+                let action_id = self.mem.borrow().read_reg(r1 as usize);
                 trace!("Supervisor call with id {}", action_id);
                 match action_id {
                     0 => return Ok(sv::Action::Exit),
