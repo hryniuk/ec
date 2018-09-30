@@ -22,6 +22,10 @@ type IndirectBit = u8;
 pub enum OpCodeValue {
     Lr = 0x00,
     Str = 0x02,
+    Ar = 0x10,
+    Sr = 0x11,
+    Mr = 0x13,
+    Dr = 0x14,
     L = 0x20,
     Swap = 0x23,
     And = 0x24,
@@ -44,7 +48,14 @@ pub enum OpType {
     Im,
 }
 
-static RrInstr: &'static [OpCode] = &[OpCodeValue::Lr as OpCode, OpCodeValue::Str as OpCode];
+static RrInstr: &'static [OpCode] = &[
+    OpCodeValue::Lr as OpCode,
+    OpCodeValue::Str as OpCode,
+    OpCodeValue::Ar as OpCode,
+    OpCodeValue::Sr as OpCode,
+    OpCodeValue::Mr as OpCode,
+    OpCodeValue::Dr as OpCode,
+];
 static RsInstr: &'static [OpCode] = &[
     OpCodeValue::L as u8,
     OpCodeValue::Swap as u8,
@@ -136,6 +147,18 @@ impl Cpu {
                     }
                     Some(OpCodeValue::Str) => {
                         return instruction::Instruction::StoreRegister(r1, r2);
+                    }
+                    Some(OpCodeValue::Ar) => {
+                        return instruction::Instruction::AddRegister(r1, r2);
+                    }
+                    Some(OpCodeValue::Sr) => {
+                        return instruction::Instruction::SubtractRegister(r1, r2);
+                    }
+                    Some(OpCodeValue::Mr) => {
+                        return instruction::Instruction::MultiplyRegister(r1, r2);
+                    }
+                    Some(OpCodeValue::Dr) => {
+                        return instruction::Instruction::DivideRegister(r1, r2);
                     }
                     Some(_) => (),
                     None => (),
@@ -260,6 +283,34 @@ impl Cpu {
                 );
                 let value = self.mem.borrow().read_reg(r1 as usize);
                 self.mem.borrow_mut().write_reg(r2 as usize, value);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::AddRegister(r1, r2) => {
+                // TODO: compare sum to 0 and set CCR
+                let result = self.mem.borrow().read_reg(r1 as usize)
+                    + self.mem.borrow().read_reg(r2 as usize);
+                self.mem.borrow_mut().write_reg(r1 as usize, result);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::SubtractRegister(r1, r2) => {
+                // TODO: compare sum to 0 and set CCR
+                let result = self.mem.borrow().read_reg(r1 as usize)
+                    - self.mem.borrow().read_reg(r2 as usize);
+                self.mem.borrow_mut().write_reg(r1 as usize, result);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::MultiplyRegister(r1, r2) => {
+                // TODO: compare sum to 0 and set CCR
+                let result = self.mem.borrow().read_reg(r1 as usize)
+                    * self.mem.borrow().read_reg(r2 as usize);
+                self.mem.borrow_mut().write_reg(r1 as usize, result);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::DivideRegister(r1, r2) => {
+                // TODO: compare sum to 0 and set CCR
+                let result = self.mem.borrow().read_reg(r1 as usize)
+                    / self.mem.borrow().read_reg(r2 as usize);
+                self.mem.borrow_mut().write_reg(r1 as usize, result);
                 return Ok(sv::Action::None);
             }
             instruction::Instruction::Load(r1, _r2, addr) => {

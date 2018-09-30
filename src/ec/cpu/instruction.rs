@@ -10,6 +10,10 @@ pub enum Instruction {
     None,
     LoadRegister(Register, Register),
     StoreRegister(Register, Register),
+    AddRegister(Register, Register),
+    SubtractRegister(Register, Register),
+    MultiplyRegister(Register, Register),
+    DivideRegister(Register, Register),
     /// The first register is loaded with the word at the effective address
     Load(Register, Register, Address),
     Swap(Register, Register, Address),
