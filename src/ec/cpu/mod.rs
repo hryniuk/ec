@@ -1,5 +1,6 @@
 // TODO: make it private
 pub mod instruction;
+pub mod opcode;
 
 use ec::cpu::instruction::Address;
 use ec::cpu::instruction::Register;
@@ -14,90 +15,7 @@ use std::rc::Rc;
 const REGISTERS_OFFSET: usize = 1;
 const ADDRESS_OFFSET: usize = 2;
 
-type OpCode = u8;
 type IndirectBit = u8;
-
-// NOTE: remember to add this value to proper *Instr array below
-#[derive(FromPrimitive)]
-pub enum OpCodeValue {
-    Lr = 0x00,
-    Str = 0x02,
-    Andr = 0x04,
-    Orr = 0x05,
-    Xorr = 0x06,
-    Notr = 0x07,
-    Ar = 0x10,
-    Sr = 0x11,
-    Mr = 0x13,
-    Dr = 0x14,
-    L = 0x20,
-    Swap = 0x23,
-    And = 0x24,
-    Or = 0x25,
-    Xor = 0x26,
-    Not = 0x27,
-    Svc = 0x2e,
-    A = 0x30,
-    S = 0x31,
-    M = 0x33,
-    D = 0x34,
-    Li = 0x40,
-    Andi = 0x44,
-    Ori = 0x45,
-    Xori = 0x46,
-    Noti = 0x47,
-    Ai = 0x50,
-    Si = 0x51,
-    Mi = 0x53,
-    Di = 0x54,
-    Min = 0x7a,
-    Max = 0x7b,
-}
-
-pub enum OpType {
-    Rr,
-    Rs,
-    Im,
-}
-
-static RrInstr: &'static [OpCode] = &[
-    OpCodeValue::Lr as OpCode,
-    OpCodeValue::Str as OpCode,
-    OpCodeValue::Andr as OpCode,
-    OpCodeValue::Orr as OpCode,
-    OpCodeValue::Xorr as OpCode,
-    OpCodeValue::Notr as OpCode,
-    OpCodeValue::Ar as OpCode,
-    OpCodeValue::Sr as OpCode,
-    OpCodeValue::Mr as OpCode,
-    OpCodeValue::Dr as OpCode,
-];
-static RsInstr: &'static [OpCode] = &[
-    OpCodeValue::L as u8,
-    OpCodeValue::Swap as u8,
-    OpCodeValue::Svc as u8,
-    OpCodeValue::And as u8,
-    OpCodeValue::Or as u8,
-    OpCodeValue::Xor as u8,
-    OpCodeValue::Not as u8,
-    OpCodeValue::A as u8,
-    OpCodeValue::S as u8,
-    OpCodeValue::M as u8,
-    OpCodeValue::D as u8,
-    OpCodeValue::Min as u8,
-    OpCodeValue::Max as u8,
-];
-static ImInstr: &'static [OpCode] = &[
-    OpCodeValue::Li as OpCode,
-    OpCodeValue::Andi as OpCode,
-    OpCodeValue::Ori as OpCode,
-    OpCodeValue::Xori as OpCode,
-    OpCodeValue::Noti as OpCode,
-    OpCodeValue::Ai as OpCode,
-    OpCodeValue::Si as OpCode,
-    OpCodeValue::Mi as OpCode,
-    OpCodeValue::Di as OpCode,
-];
 
 enum Ccr {
     Empty,
@@ -121,17 +39,17 @@ impl Cpu {
             mem,
         }
     }
-    fn op_type(op_code: OpCode) -> Option<OpType> {
-        if RrInstr.contains(&op_code) {
-            return Some(OpType::Rr);
-        } else if RsInstr.contains(&op_code) {
-            return Some(OpType::Rs);
-        } else if ImInstr.contains(&op_code) {
-            return Some(OpType::Im);
+    fn op_type(op_code: opcode::OpCode) -> Option<opcode::OpType> {
+        if opcode::RrInstr.contains(&op_code) {
+            return Some(opcode::OpType::Rr);
+        } else if opcode::RsInstr.contains(&op_code) {
+            return Some(opcode::OpType::Rs);
+        } else if opcode::ImInstr.contains(&op_code) {
+            return Some(opcode::OpType::Im);
         }
         None
     }
-    fn read_opcode(&self, address: usize) -> (IndirectBit, OpCode) {
+    fn read_opcode(&self, address: usize) -> (IndirectBit, opcode::OpCode) {
         let byte = self.mem.borrow().get(address);
         (((byte & 0x40) != 0) as IndirectBit, byte & 0x7f)
     }
@@ -163,7 +81,7 @@ impl Cpu {
         trace!("Reading next instruction at {}", self.ilc);
         let (_indirect_bit, op_code) = self.read_opcode(self.ilc);
         match Cpu::op_type(op_code) {
-            Some(OpType::Rr) => {
+            Some(opcode::OpType::Rr) => {
                 let (r1, r2) = self.read_op_registers(self.ilc + REGISTERS_OFFSET);
                 trace!("RR instruction {} {}", r1, r2);
                 match FromPrimitive::from_u8(op_code) {
@@ -178,44 +96,44 @@ impl Cpu {
                     // 4) save address of the last byte of the read program (which should be last?
                     //    with the highest address or last read (is it always the same?)) and
                     //    exit on reaching it
-                    Some(OpCodeValue::Lr) => {
+                    Some(opcode::OpCodeValue::Lr) => {
                         if r1 == 0 && r2 == 0 {
                             return instruction::Instruction::None;
                         }
                         return instruction::Instruction::LoadRegister(r1, r2);
                     }
-                    Some(OpCodeValue::Str) => {
+                    Some(opcode::OpCodeValue::Str) => {
                         return instruction::Instruction::StoreRegister(r1, r2);
                     }
-                    Some(OpCodeValue::Andr) => {
+                    Some(opcode::OpCodeValue::Andr) => {
                         return instruction::Instruction::AndRegister(r1, r2);
                     }
-                    Some(OpCodeValue::Orr) => {
+                    Some(opcode::OpCodeValue::Orr) => {
                         return instruction::Instruction::OrRegister(r1, r2);
                     }
-                    Some(OpCodeValue::Xorr) => {
+                    Some(opcode::OpCodeValue::Xorr) => {
                         return instruction::Instruction::XorRegister(r1, r2);
                     }
-                    Some(OpCodeValue::Notr) => {
+                    Some(opcode::OpCodeValue::Notr) => {
                         return instruction::Instruction::NotRegister(r1, r2);
                     }
-                    Some(OpCodeValue::Ar) => {
+                    Some(opcode::OpCodeValue::Ar) => {
                         return instruction::Instruction::AddRegister(r1, r2);
                     }
-                    Some(OpCodeValue::Sr) => {
+                    Some(opcode::OpCodeValue::Sr) => {
                         return instruction::Instruction::SubtractRegister(r1, r2);
                     }
-                    Some(OpCodeValue::Mr) => {
+                    Some(opcode::OpCodeValue::Mr) => {
                         return instruction::Instruction::MultiplyRegister(r1, r2);
                     }
-                    Some(OpCodeValue::Dr) => {
+                    Some(opcode::OpCodeValue::Dr) => {
                         return instruction::Instruction::DivideRegister(r1, r2);
                     }
                     Some(_) => (),
                     None => (),
                 }
             }
-            Some(OpType::Rs) => {
+            Some(opcode::OpType::Rs) => {
                 let (r1, r2) = self.read_op_registers(self.ilc + REGISTERS_OFFSET);
                 trace!("RS instruction, r1 = {} r2 = {}", r1, r2);
                 let address = self.read_op_address(self.ilc);
@@ -223,78 +141,78 @@ impl Cpu {
                 // e.g. Match(OpCodeValue::L, instruction::Instruction::Load)
                 // that will pass proper arguments to them
                 match FromPrimitive::from_u8(op_code) {
-                    Some(OpCodeValue::L) => {
+                    Some(opcode::OpCodeValue::L) => {
                         return instruction::Instruction::Load(r1, r2, address);
                     }
-                    Some(OpCodeValue::Swap) => {
+                    Some(opcode::OpCodeValue::Swap) => {
                         return instruction::Instruction::Swap(r1, r2, address);
                     }
-                    Some(OpCodeValue::Svc) => {
+                    Some(opcode::OpCodeValue::Svc) => {
                         return instruction::Instruction::SupervisorCall(r1, r2, address);
                     }
-                    Some(OpCodeValue::And) => {
+                    Some(opcode::OpCodeValue::And) => {
                         return instruction::Instruction::And(r1, r2, address);
                     }
-                    Some(OpCodeValue::Or) => {
+                    Some(opcode::OpCodeValue::Or) => {
                         return instruction::Instruction::Or(r1, r2, address);
                     }
-                    Some(OpCodeValue::Xor) => {
+                    Some(opcode::OpCodeValue::Xor) => {
                         return instruction::Instruction::Xor(r1, r2, address);
                     }
-                    Some(OpCodeValue::Not) => {
+                    Some(opcode::OpCodeValue::Not) => {
                         return instruction::Instruction::Not(r1, r2, address);
                     }
-                    Some(OpCodeValue::A) => {
+                    Some(opcode::OpCodeValue::A) => {
                         return instruction::Instruction::Add(r1, r2, address);
                     }
-                    Some(OpCodeValue::S) => {
+                    Some(opcode::OpCodeValue::S) => {
                         return instruction::Instruction::Subtract(r1, r2, address);
                     }
-                    Some(OpCodeValue::M) => {
+                    Some(opcode::OpCodeValue::M) => {
                         return instruction::Instruction::Multiply(r1, r2, address);
                     }
-                    Some(OpCodeValue::D) => {
+                    Some(opcode::OpCodeValue::D) => {
                         return instruction::Instruction::Divide(r1, r2, address);
                     }
-                    Some(OpCodeValue::Min) => {
+                    Some(opcode::OpCodeValue::Min) => {
                         return instruction::Instruction::Min(r1, r2, address);
                     }
-                    Some(OpCodeValue::Max) => {
+                    Some(opcode::OpCodeValue::Max) => {
                         return instruction::Instruction::Max(r1, r2, address);
                     }
                     Some(_) => (),
                     None => (),
                 }
             }
-            Some(OpType::Im) => {
+            Some(opcode::OpType::Im) => {
                 let (r1, value) = self.read_r1_and_value(self.ilc);
                 trace!("IM instruction {} {}", r1, value);
                 match FromPrimitive::from_u8(op_code) {
-                    Some(OpCodeValue::Li) => {
+                    Some(opcode::OpCodeValue::Li) => {
                         return instruction::Instruction::LoadImmediate(r1, value);
                     }
-                    Some(OpCodeValue::Andi) => {
+                    Some(opcode::OpCodeValue::Andi) => {
                         return instruction::Instruction::AndImmediate(r1, value);
                     }
-                    Some(OpCodeValue::Ori) => {
+                    Some(opcode::OpCodeValue::Ori) => {
                         return instruction::Instruction::OrImmediate(r1, value);
                     }
-                    Some(OpCodeValue::Xori) => {
+                    Some(opcode::OpCodeValue::Xori) => {
                         return instruction::Instruction::XorImmediate(r1, value);
                     }
-                    Some(OpCodeValue::Noti) => {
+                    Some(opcode::OpCodeValue::Noti) => {
                         return instruction::Instruction::NotImmediate(r1, value);
                     }
-                    Some(OpCodeValue::Ai) => {
+                    Some(opcode::OpCodeValue::Ai) => {
                         return instruction::Instruction::AddImmediate(r1, value);
                     }
-                    Some(OpCodeValue::Si) => {
+                    Some(opcode::OpCodeValue::Si) => {
                         return instruction::Instruction::SubtractImmediate(r1, value);
                     }
-                    Some(OpCodeValue::Mi) => {
+                    Some(opcode::OpCodeValue::Mi) => {
                         return instruction::Instruction::MultiplyImmediate(r1, value);
                     }
-                    Some(OpCodeValue::Di) => {
+                    Some(opcode::OpCodeValue::Di) => {
                         return instruction::Instruction::DivideImmediate(r1, value);
                     }
                     Some(_) => (),
@@ -322,7 +240,7 @@ impl Cpu {
         // ilc should be encapsulated and put in some structure taking care
         // of the full information about next instruction
         match Cpu::op_type(op_code) {
-            Some(OpType::Rr) => {
+            Some(opcode::OpType::Rr) => {
                 self.ilc += 0x2;
             }
             _ => {
