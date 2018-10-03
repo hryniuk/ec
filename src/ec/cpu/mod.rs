@@ -482,6 +482,7 @@ impl Cpu {
                 return Ok(sv::Action::None);
             }
             instruction::Instruction::None => (),
+            _ => (),
         }
         Ok(sv::Action::Exit)
     }

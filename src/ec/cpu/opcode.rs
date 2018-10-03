@@ -1,7 +1,7 @@
 pub type OpCode = u8;
 
 // NOTE: remember to add this value to proper *Instr array below
-#[derive(FromPrimitive)]
+#[derive(FromPrimitive, Debug)]
 pub enum OpCodeValue {
     Lr = 0x00,
     Str = 0x02,
