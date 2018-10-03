@@ -99,14 +99,27 @@ static ImInstr: &'static [OpCode] = &[
     OpCodeValue::Di as OpCode,
 ];
 
+enum Ccr {
+    Empty,
+    Overflow,
+    Greater,
+    Lower,
+    Equal,
+}
+
 pub struct Cpu {
+    ccr: Ccr,
     ilc: usize,
     mem: Rc<RefCell<mem::Memory>>,
 }
 
 impl Cpu {
     pub fn new(mem: Rc<RefCell<mem::Memory>>) -> Cpu {
-        Cpu { ilc: 0x40, mem }
+        Cpu {
+            ccr: Ccr::Empty,
+            ilc: 0x40,
+            mem,
+        }
     }
     fn op_type(op_code: OpCode) -> Option<OpType> {
         if RrInstr.contains(&op_code) {
