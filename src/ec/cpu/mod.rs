@@ -42,6 +42,14 @@ pub enum OpCodeValue {
     M = 0x33,
     D = 0x34,
     Li = 0x40,
+    Andi = 0x44,
+    Ori = 0x45,
+    Xori = 0x46,
+    Noti = 0x47,
+    Ai = 0x50,
+    Si = 0x51,
+    Mi = 0x53,
+    Di = 0x54,
     Min = 0x7a,
     Max = 0x7b,
 }
@@ -79,7 +87,17 @@ static RsInstr: &'static [OpCode] = &[
     OpCodeValue::Min as u8,
     OpCodeValue::Max as u8,
 ];
-static ImInstr: &'static [OpCode] = &[OpCodeValue::Li as OpCode];
+static ImInstr: &'static [OpCode] = &[
+    OpCodeValue::Li as OpCode,
+    OpCodeValue::Andi as OpCode,
+    OpCodeValue::Ori as OpCode,
+    OpCodeValue::Xori as OpCode,
+    OpCodeValue::Noti as OpCode,
+    OpCodeValue::Ai as OpCode,
+    OpCodeValue::Si as OpCode,
+    OpCodeValue::Mi as OpCode,
+    OpCodeValue::Di as OpCode,
+];
 
 pub struct Cpu {
     ilc: usize,
@@ -242,6 +260,30 @@ impl Cpu {
                     Some(OpCodeValue::Li) => {
                         return instruction::Instruction::LoadImmediate(r1, value);
                     }
+                    Some(OpCodeValue::Andi) => {
+                        return instruction::Instruction::AndImmediate(r1, value);
+                    }
+                    Some(OpCodeValue::Ori) => {
+                        return instruction::Instruction::OrImmediate(r1, value);
+                    }
+                    Some(OpCodeValue::Xori) => {
+                        return instruction::Instruction::XorImmediate(r1, value);
+                    }
+                    Some(OpCodeValue::Noti) => {
+                        return instruction::Instruction::NotImmediate(r1, value);
+                    }
+                    Some(OpCodeValue::Ai) => {
+                        return instruction::Instruction::AddImmediate(r1, value);
+                    }
+                    Some(OpCodeValue::Si) => {
+                        return instruction::Instruction::SubtractImmediate(r1, value);
+                    }
+                    Some(OpCodeValue::Mi) => {
+                        return instruction::Instruction::MultiplyImmediate(r1, value);
+                    }
+                    Some(OpCodeValue::Di) => {
+                        return instruction::Instruction::DivideImmediate(r1, value);
+                    }
                     Some(_) => (),
                     None => (),
                 }
@@ -275,6 +317,8 @@ impl Cpu {
             }
         }
         if trace {
+            // NOTE: it eases debugging very much and should be taken
+            // into account when moving to opcodes only
             trace!("{:?}", next_instr);
         }
         // TODO: Match instruction format (RR/RS/IM/CH) instead of type,
@@ -448,6 +492,46 @@ impl Cpu {
             }
             instruction::Instruction::LoadImmediate(r1, value) => {
                 self.mem.borrow_mut().write_reg(r1 as usize, value as i32);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::AndImmediate(r1, value) => {
+                let result = self.mem.borrow().read_reg(r1 as usize) & value;
+                self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::OrImmediate(r1, value) => {
+                let result = self.mem.borrow().read_reg(r1 as usize) | value;
+                self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::XorImmediate(r1, value) => {
+                let result = self.mem.borrow().read_reg(r1 as usize) ^ value;
+                self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::NotImmediate(r1, value) => {
+                let result = !self.mem.borrow().read_reg(r1 as usize);
+                self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::AddImmediate(r1, value) => {
+                let result = self.mem.borrow().read_reg(r1 as usize) + value;
+                self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::SubtractImmediate(r1, value) => {
+                let result = self.mem.borrow().read_reg(r1 as usize) - value;
+                self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::MultiplyImmediate(r1, value) => {
+                let result = self.mem.borrow().read_reg(r1 as usize) * value;
+                self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                return Ok(sv::Action::None);
+            }
+            instruction::Instruction::DivideImmediate(r1, value) => {
+                let result = self.mem.borrow().read_reg(r1 as usize) / value;
+                self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
                 return Ok(sv::Action::None);
             }
             instruction::Instruction::Min(r1, _r2, addr) => {
