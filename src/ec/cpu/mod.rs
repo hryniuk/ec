@@ -137,50 +137,11 @@ impl Cpu {
                 let (r1, r2) = self.read_op_registers(self.ilc + REGISTERS_OFFSET);
                 trace!("RS instruction, r1 = {} r2 = {}", r1, r2);
                 let address = self.read_op_address(self.ilc);
-                // TODO: write a macro to handle these patterns
-                // e.g. Match(OpCodeValue::L, instruction::Instruction::Load)
-                // that will pass proper arguments to them
+
                 match FromPrimitive::from_u8(op_code) {
-                    Some(opcode::OpCodeValue::L) => {
-                        return instruction::Instruction::Load(r1, r2, address);
+                    Some(o) => {
+                        return instruction::Instruction::RegisterStorage(o, r1, r2, address);
                     }
-                    Some(opcode::OpCodeValue::Swap) => {
-                        return instruction::Instruction::Swap(r1, r2, address);
-                    }
-                    Some(opcode::OpCodeValue::Svc) => {
-                        return instruction::Instruction::SupervisorCall(r1, r2, address);
-                    }
-                    Some(opcode::OpCodeValue::And) => {
-                        return instruction::Instruction::And(r1, r2, address);
-                    }
-                    Some(opcode::OpCodeValue::Or) => {
-                        return instruction::Instruction::Or(r1, r2, address);
-                    }
-                    Some(opcode::OpCodeValue::Xor) => {
-                        return instruction::Instruction::Xor(r1, r2, address);
-                    }
-                    Some(opcode::OpCodeValue::Not) => {
-                        return instruction::Instruction::Not(r1, r2, address);
-                    }
-                    Some(opcode::OpCodeValue::A) => {
-                        return instruction::Instruction::Add(r1, r2, address);
-                    }
-                    Some(opcode::OpCodeValue::S) => {
-                        return instruction::Instruction::Subtract(r1, r2, address);
-                    }
-                    Some(opcode::OpCodeValue::M) => {
-                        return instruction::Instruction::Multiply(r1, r2, address);
-                    }
-                    Some(opcode::OpCodeValue::D) => {
-                        return instruction::Instruction::Divide(r1, r2, address);
-                    }
-                    Some(opcode::OpCodeValue::Min) => {
-                        return instruction::Instruction::Min(r1, r2, address);
-                    }
-                    Some(opcode::OpCodeValue::Max) => {
-                        return instruction::Instruction::Max(r1, r2, address);
-                    }
-                    Some(_) => (),
                     None => (),
                 }
             }
@@ -258,6 +219,113 @@ impl Cpu {
         // A => |a, b| a + b;
         // S => |a, b| a - b;
         match next_instr {
+            instruction::Instruction::RegisterStorage(op_code, r1, r2, address) => {
+                match op_code {
+                    opcode::OpCodeValue::L => {
+                        let value = self.mem.borrow().read_word(address as usize);
+                        self.mem.borrow_mut().write_reg(r1 as usize, value);
+                        return Ok(sv::Action::None);
+                    }
+                    opcode::OpCodeValue::Swap => {
+                        // TODO: set proper CCR bits
+                        let r1_value = self.mem.borrow().read_reg(r1 as usize);
+                        let swap_value = self.mem.borrow().read_word(address as usize);
+                        debug!(
+                            "running swap instruction with {} ({} reg) and {} ({} address)",
+                            r1_value, r1, swap_value, address
+                        );
+                        self.mem.borrow_mut().write_reg(r1 as usize, swap_value);
+                        self.mem.borrow_mut().write_word(address as usize, r1_value);
+                        return Ok(sv::Action::None);
+                    }
+                    opcode::OpCodeValue::Svc => {
+                        // TODO: consider additional interface for register
+                        // value retrieval
+                        let action_id = self.mem.borrow().read_reg(r1 as usize);
+                        trace!("Supervisor call with id {}", action_id);
+                        match action_id {
+                            0 => return Ok(sv::Action::Exit),
+                            1 => return Ok(sv::Action::ReadInt(address)),
+                            3 => return Ok(sv::Action::ReadChar(address)),
+                            5 => return Ok(sv::Action::WriteInt(address)),
+                            7 => return Ok(sv::Action::WriteChar(address)),
+                            _ => return Ok(sv::Action::Exit),
+                        }
+                    }
+                    opcode::OpCodeValue::And => {
+                        // TODO: set proper CCR bits
+                        let result = self.mem.borrow().read_reg(r1 as usize)
+                            & self.mem.borrow().read_word(address as usize);
+                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        return Ok(sv::Action::None);
+                    }
+                    opcode::OpCodeValue::Or => {
+                        // TODO: set proper CCR bits
+                        let result = self.mem.borrow().read_reg(r1 as usize)
+                            | self.mem.borrow().read_word(address as usize);
+                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        return Ok(sv::Action::None);
+                    }
+                    opcode::OpCodeValue::Xor => {
+                        // TODO: set proper CCR bits
+                        let result = self.mem.borrow().read_reg(r1 as usize)
+                            ^ self.mem.borrow().read_word(address as usize);
+                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        return Ok(sv::Action::None);
+                    }
+                    opcode::OpCodeValue::Not => {
+                        // TODO: set proper CCR bits
+                        let result = !self.mem.borrow().read_word(address as usize);
+                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        return Ok(sv::Action::None);
+                    }
+                    opcode::OpCodeValue::A => {
+                        // TODO: compare sum to 0 and set CCR
+                        let result = self.mem.borrow().read_reg(r1 as usize)
+                            + self.mem.borrow().read_word(address as usize);
+                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        return Ok(sv::Action::None);
+                    }
+                    opcode::OpCodeValue::S => {
+                        // TODO: compare sum to 0 and set CCR
+                        let result = self.mem.borrow().read_reg(r1 as usize)
+                            - self.mem.borrow().read_word(address as usize);
+                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        return Ok(sv::Action::None);
+                    }
+                    opcode::OpCodeValue::M => {
+                        // TODO: compare sum to 0 and set CCR
+                        let result = self.mem.borrow().read_reg(r1 as usize)
+                            * self.mem.borrow().read_word(address as usize);
+                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        return Ok(sv::Action::None);
+                    }
+                    opcode::OpCodeValue::D => {
+                        // TODO: compare sum to 0 and set CCR
+                        let result = self.mem.borrow().read_reg(r1 as usize)
+                            / self.mem.borrow().read_word(address as usize);
+                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        return Ok(sv::Action::None);
+                    }
+                    opcode::OpCodeValue::Min => {
+                        let r1_value = self.mem.borrow().read_reg(r1 as usize);
+                        let address_value = self.mem.borrow().read_word(address as usize);
+                        self.mem
+                            .borrow_mut()
+                            .write_reg(r1 as usize, cmp::min(r1_value, address_value) as i32);
+                        return Ok(sv::Action::None);
+                    }
+                    opcode::OpCodeValue::Max => {
+                        let r1_value = self.mem.borrow().read_reg(r1 as usize);
+                        let address_value = self.mem.borrow().read_word(address as usize);
+                        self.mem
+                            .borrow_mut()
+                            .write_reg(r1 as usize, cmp::max(r1_value, address_value) as i32);
+                        return Ok(sv::Action::None);
+                    }
+                    _ => (),
+                }
+            }
             // TODO: add indirect bit support
             instruction::Instruction::LoadRegister(r1, r2) => {
                 trace!(
@@ -335,92 +403,6 @@ impl Cpu {
                 self.mem.borrow_mut().write_reg(r1 as usize, result);
                 return Ok(sv::Action::None);
             }
-            instruction::Instruction::Load(r1, _r2, addr) => {
-                let value = self.mem.borrow().read_word(addr as usize);
-                self.mem.borrow_mut().write_reg(r1 as usize, value);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::Swap(r1, _r2, addr) => {
-                // TODO: set proper CCR bits
-                let r1_value = self.mem.borrow().read_reg(r1 as usize);
-                let swap_value = self.mem.borrow().read_word(addr as usize);
-                debug!(
-                    "running swap instruction with {} ({} reg) and {} ({} addr)",
-                    r1_value, r1, swap_value, addr
-                );
-                self.mem.borrow_mut().write_reg(r1 as usize, swap_value);
-                self.mem.borrow_mut().write_word(addr as usize, r1_value);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::SupervisorCall(r1, _r2, addr) => {
-                // TODO: consider additional interface for register
-                // value retrieval
-                let action_id = self.mem.borrow().read_reg(r1 as usize);
-                trace!("Supervisor call with id {}", action_id);
-                match action_id {
-                    0 => return Ok(sv::Action::Exit),
-                    1 => return Ok(sv::Action::ReadInt(addr)),
-                    3 => return Ok(sv::Action::ReadChar(addr)),
-                    5 => return Ok(sv::Action::WriteInt(addr)),
-                    7 => return Ok(sv::Action::WriteChar(addr)),
-                    _ => return Ok(sv::Action::Exit),
-                }
-            }
-            instruction::Instruction::And(r1, _r2, addr) => {
-                // TODO: set proper CCR bits
-                let result = self.mem.borrow().read_reg(r1 as usize)
-                    & self.mem.borrow().read_word(addr as usize);
-                self.mem.borrow_mut().write_reg(r1 as usize, result);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::Or(r1, _r2, addr) => {
-                // TODO: set proper CCR bits
-                let result = self.mem.borrow().read_reg(r1 as usize)
-                    | self.mem.borrow().read_word(addr as usize);
-                self.mem.borrow_mut().write_reg(r1 as usize, result);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::Xor(r1, _r2, addr) => {
-                // TODO: set proper CCR bits
-                let result = self.mem.borrow().read_reg(r1 as usize)
-                    ^ self.mem.borrow().read_word(addr as usize);
-                self.mem.borrow_mut().write_reg(r1 as usize, result);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::Not(r1, _r2, addr) => {
-                // TODO: set proper CCR bits
-                let result = !self.mem.borrow().read_word(addr as usize);
-                self.mem.borrow_mut().write_reg(r1 as usize, result);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::Add(r1, _r2, addr) => {
-                // TODO: compare sum to 0 and set CCR
-                let result = self.mem.borrow().read_reg(r1 as usize)
-                    + self.mem.borrow().read_word(addr as usize);
-                self.mem.borrow_mut().write_reg(r1 as usize, result);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::Subtract(r1, _r2, addr) => {
-                // TODO: compare sum to 0 and set CCR
-                let result = self.mem.borrow().read_reg(r1 as usize)
-                    - self.mem.borrow().read_word(addr as usize);
-                self.mem.borrow_mut().write_reg(r1 as usize, result);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::Multiply(r1, _r2, addr) => {
-                // TODO: compare sum to 0 and set CCR
-                let result = self.mem.borrow().read_reg(r1 as usize)
-                    * self.mem.borrow().read_word(addr as usize);
-                self.mem.borrow_mut().write_reg(r1 as usize, result);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::Divide(r1, _r2, addr) => {
-                // TODO: compare sum to 0 and set CCR
-                let result = self.mem.borrow().read_reg(r1 as usize)
-                    / self.mem.borrow().read_word(addr as usize);
-                self.mem.borrow_mut().write_reg(r1 as usize, result);
-                return Ok(sv::Action::None);
-            }
             instruction::Instruction::LoadImmediate(r1, value) => {
                 self.mem.borrow_mut().write_reg(r1 as usize, value as i32);
                 return Ok(sv::Action::None);
@@ -463,22 +445,6 @@ impl Cpu {
             instruction::Instruction::DivideImmediate(r1, value) => {
                 let result = self.mem.borrow().read_reg(r1 as usize) / value;
                 self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::Min(r1, _r2, addr) => {
-                let r1_value = self.mem.borrow().read_reg(r1 as usize);
-                let addr_value = self.mem.borrow().read_word(addr as usize);
-                self.mem
-                    .borrow_mut()
-                    .write_reg(r1 as usize, cmp::min(r1_value, addr_value) as i32);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::Max(r1, _r2, addr) => {
-                let r1_value = self.mem.borrow().read_reg(r1 as usize);
-                let addr_value = self.mem.borrow().read_word(addr as usize);
-                self.mem
-                    .borrow_mut()
-                    .write_reg(r1 as usize, cmp::max(r1_value, addr_value) as i32);
                 return Ok(sv::Action::None);
             }
             instruction::Instruction::None => (),
