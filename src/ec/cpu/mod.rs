@@ -128,34 +128,9 @@ impl Cpu {
                 let (r1, value) = self.read_r1_and_value(self.ilc);
                 trace!("IM instruction {} {}", r1, value);
                 match FromPrimitive::from_u8(op_code) {
-                    Some(opcode::OpCodeValue::Li) => {
-                        return instruction::Instruction::LoadImmediate(r1, value);
+                    Some(o) => {
+                        return instruction::Instruction::Immediate(o, r1, value);
                     }
-                    Some(opcode::OpCodeValue::Andi) => {
-                        return instruction::Instruction::AndImmediate(r1, value);
-                    }
-                    Some(opcode::OpCodeValue::Ori) => {
-                        return instruction::Instruction::OrImmediate(r1, value);
-                    }
-                    Some(opcode::OpCodeValue::Xori) => {
-                        return instruction::Instruction::XorImmediate(r1, value);
-                    }
-                    Some(opcode::OpCodeValue::Noti) => {
-                        return instruction::Instruction::NotImmediate(r1, value);
-                    }
-                    Some(opcode::OpCodeValue::Ai) => {
-                        return instruction::Instruction::AddImmediate(r1, value);
-                    }
-                    Some(opcode::OpCodeValue::Si) => {
-                        return instruction::Instruction::SubtractImmediate(r1, value);
-                    }
-                    Some(opcode::OpCodeValue::Mi) => {
-                        return instruction::Instruction::MultiplyImmediate(r1, value);
-                    }
-                    Some(opcode::OpCodeValue::Di) => {
-                        return instruction::Instruction::DivideImmediate(r1, value);
-                    }
-                    Some(_) => (),
                     None => (),
                 }
             }
@@ -387,50 +362,53 @@ impl Cpu {
                     _ => (),
                 }
             }
-            instruction::Instruction::LoadImmediate(r1, value) => {
-                self.mem.borrow_mut().write_reg(r1 as usize, value as i32);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::AndImmediate(r1, value) => {
-                let result = self.mem.borrow().read_reg(r1 as usize) & value;
-                self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::OrImmediate(r1, value) => {
-                let result = self.mem.borrow().read_reg(r1 as usize) | value;
-                self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::XorImmediate(r1, value) => {
-                let result = self.mem.borrow().read_reg(r1 as usize) ^ value;
-                self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::NotImmediate(r1, value) => {
-                let result = !self.mem.borrow().read_reg(r1 as usize);
-                self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::AddImmediate(r1, value) => {
-                let result = self.mem.borrow().read_reg(r1 as usize) + value;
-                self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::SubtractImmediate(r1, value) => {
-                let result = self.mem.borrow().read_reg(r1 as usize) - value;
-                self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::MultiplyImmediate(r1, value) => {
-                let result = self.mem.borrow().read_reg(r1 as usize) * value;
-                self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
-                return Ok(sv::Action::None);
-            }
-            instruction::Instruction::DivideImmediate(r1, value) => {
-                let result = self.mem.borrow().read_reg(r1 as usize) / value;
-                self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
-                return Ok(sv::Action::None);
-            }
+            instruction::Instruction::Immediate(op_code, r1, value) => match op_code {
+                opcode::OpCodeValue::Li => {
+                    self.mem.borrow_mut().write_reg(r1 as usize, value as i32);
+                    return Ok(sv::Action::None);
+                }
+                opcode::OpCodeValue::Andi => {
+                    let result = self.mem.borrow().read_reg(r1 as usize) & value;
+                    self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                    return Ok(sv::Action::None);
+                }
+                opcode::OpCodeValue::Ori => {
+                    let result = self.mem.borrow().read_reg(r1 as usize) | value;
+                    self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                    return Ok(sv::Action::None);
+                }
+                opcode::OpCodeValue::Xori => {
+                    let result = self.mem.borrow().read_reg(r1 as usize) ^ value;
+                    self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                    return Ok(sv::Action::None);
+                }
+                opcode::OpCodeValue::Noti => {
+                    let result = !self.mem.borrow().read_reg(r1 as usize);
+                    self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                    return Ok(sv::Action::None);
+                }
+                opcode::OpCodeValue::Ai => {
+                    let result = self.mem.borrow().read_reg(r1 as usize) + value;
+                    self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                    return Ok(sv::Action::None);
+                }
+                opcode::OpCodeValue::Si => {
+                    let result = self.mem.borrow().read_reg(r1 as usize) - value;
+                    self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                    return Ok(sv::Action::None);
+                }
+                opcode::OpCodeValue::Mi => {
+                    let result = self.mem.borrow().read_reg(r1 as usize) * value;
+                    self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                    return Ok(sv::Action::None);
+                }
+                opcode::OpCodeValue::Di => {
+                    let result = self.mem.borrow().read_reg(r1 as usize) / value;
+                    self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                    return Ok(sv::Action::None);
+                }
+                _ => (),
+            },
             instruction::Instruction::None => (),
             _ => (),
         }
