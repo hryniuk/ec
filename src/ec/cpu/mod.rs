@@ -331,7 +331,7 @@ impl Cpu {
                         self.mem.borrow_mut().write_reg(r1 as usize, result);
                         return Ok(sv::Action::None);
                     }
-                    opcode::OpCodeValue::Addr => {
+                    opcode::OpCodeValue::Ar => {
                         // TODO: compare sum to 0 and set CCR
                         let result = self.mem.borrow().read_reg(r1 as usize)
                             + self.mem.borrow().read_reg(r2 as usize);
@@ -352,7 +352,7 @@ impl Cpu {
                         self.mem.borrow_mut().write_reg(r1 as usize, result);
                         return Ok(sv::Action::None);
                     }
-                    opcode::OpCodeValue::Dr(r1, r2) => {
+                    opcode::OpCodeValue::Dr => {
                         // TODO: compare sum to 0 and set CCR
                         let result = self.mem.borrow().read_reg(r1 as usize)
                             / self.mem.borrow().read_reg(r2 as usize);
