@@ -1,4 +1,5 @@
 // TODO: make it private
+mod alu;
 pub mod instruction;
 pub mod opcode;
 
@@ -39,11 +40,31 @@ impl Cpu {
             mem,
         }
     }
+    fn set_ccr(&mut self, value: i32) {
+        if value > 0 {
+            self.ccr = Ccr::Greater;
+        } else if value < 0 {
+            self.ccr = Ccr::Lower;
+        } else if value == 0 {
+            self.ccr = Ccr::Equal;
+        }
+    }
+    fn mask_ccr(&self, mask: u8) -> bool {
+        match &self.ccr {
+            Ccr::Overflow => return (mask & (1 << 3)) != 0,
+            Ccr::Greater => return (mask & (1 << 2)) != 0,
+            Ccr::Lower => return (mask & (1 << 1)) != 0,
+            Ccr::Equal => return (mask & 1) != 0,
+            Ccr::Empty => false,
+        }
+    }
     fn op_type(op_code: opcode::OpCode) -> Option<opcode::OpType> {
         if opcode::RrInstr.contains(&op_code) {
             return Some(opcode::OpType::Rr);
         } else if opcode::RsInstr.contains(&op_code) {
             return Some(opcode::OpType::Rs);
+        } else if opcode::RrmInstr.contains(&op_code) {
+            return Some(opcode::OpType::Rrm);
         } else if opcode::ImInstr.contains(&op_code) {
             return Some(opcode::OpType::Im);
         }
@@ -108,6 +129,16 @@ impl Cpu {
                     }
                     Some(o) => {
                         return instruction::Instruction::RegisterRegister(o, r1, r2);
+                    }
+                    None => (),
+                }
+            }
+            Some(opcode::OpType::Rrm) => {
+                let (m1, r2) = self.read_op_registers(self.ilc + REGISTERS_OFFSET);
+                trace!("RRm instruction m1 = {} r2 = {}", m1, r2);
+                match FromPrimitive::from_u8(op_code) {
+                    Some(o) => {
+                        return instruction::Instruction::RegisterRegisterMask(o, m1, r2);
                     }
                     None => (),
                 }
@@ -178,6 +209,11 @@ impl Cpu {
                     opcode::OpCodeValue::L => {
                         let value = self.mem.borrow().read_word(address as usize);
                         self.mem.borrow_mut().write_reg(r1 as usize, value);
+                        return Ok(sv::Action::None);
+                    }
+                    opcode::OpCodeValue::St => {
+                        let value = self.mem.borrow().read_reg(r1 as usize);
+                        self.mem.borrow_mut().write_word(address as usize, value);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Swap => {
@@ -362,6 +398,18 @@ impl Cpu {
                     _ => (),
                 }
             }
+            instruction::Instruction::RegisterRegisterMask(op_code, m1, r2) => {
+                match op_code {
+                    opcode::OpCodeValue::Bcsr => {
+                        // TODO: compare sum to 0 and set CCR
+                        if self.mask_ccr(m1) {
+                            self.ilc = self.mem.borrow().read_reg(r2 as usize) as usize
+                        }
+                        return Ok(sv::Action::None);
+                    }
+                    _ => (),
+                }
+            }
             instruction::Instruction::Immediate(op_code, r1, value) => match op_code {
                 opcode::OpCodeValue::Li => {
                     self.mem.borrow_mut().write_reg(r1 as usize, value as i32);
@@ -395,6 +443,7 @@ impl Cpu {
                 opcode::OpCodeValue::Si => {
                     let result = self.mem.borrow().read_reg(r1 as usize) - value;
                     self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                    self.set_ccr(result);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Mi => {
