@@ -4,6 +4,7 @@ pub type OpCode = u8;
 #[derive(FromPrimitive, Debug)]
 pub enum OpCodeValue {
     Lr = 0x00,
+    Lnr = 0x01,
     Str = 0x02,
     Andr = 0x04,
     Orr = 0x05,
@@ -48,6 +49,7 @@ pub enum OpType {
 
 pub static RrInstr: &'static [OpCode] = &[
     OpCodeValue::Lr as OpCode,
+    OpCodeValue::Lnr as OpCode,
     OpCodeValue::Str as OpCode,
     OpCodeValue::Andr as OpCode,
     OpCodeValue::Orr as OpCode,

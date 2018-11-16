@@ -318,6 +318,7 @@ impl Cpu {
             }
             instruction::Instruction::RegisterRegister(op_code, r1, r2) => {
                 match op_code {
+                    // TODO: add trace messages?
                     // TODO: add indirect bit support
                     opcode::OpCodeValue::Lr => {
                         trace!(
@@ -327,6 +328,16 @@ impl Cpu {
                         );
                         let value = self.mem.borrow().read_reg(r2 as usize);
                         self.mem.borrow_mut().write_reg(r1 as usize, value);
+                        return Ok(sv::Action::None);
+                    }
+                    opcode::OpCodeValue::Lnr => {
+                        trace!(
+                            "running LoadNegativeRegister instruction with r1 = {} r2 = {}",
+                            r1,
+                            r2
+                        );
+                        let value = self.mem.borrow().read_reg(r2 as usize);
+                        self.mem.borrow_mut().write_reg(r1 as usize, !value + 1);
                         return Ok(sv::Action::None);
                     }
                     // TODO: add indirect bit support
