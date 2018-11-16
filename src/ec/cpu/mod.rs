@@ -430,6 +430,13 @@ impl Cpu {
                         }
                         return Ok(sv::Action::None);
                     }
+                    opcode::OpCodeValue::Bcrr => {
+                        debug!("running BCRR instruction with {} mask and {} reg", m1, r2);
+                        if !self.mask_ccr(m1) {
+                            self.ilc = self.mem.borrow().read_reg(r2 as usize) as usize
+                        }
+                        return Ok(sv::Action::None);
+                    }
                     _ => (),
                 }
             }
