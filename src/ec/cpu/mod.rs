@@ -351,6 +351,18 @@ impl Cpu {
                         self.mem.borrow_mut().write_reg(r2 as usize, value);
                         return Ok(sv::Action::None);
                     }
+                    opcode::OpCodeValue::Swapr => {
+                        // TODO: set proper CCR bits
+                        let r1_value = self.mem.borrow().read_reg(r1 as usize);
+                        let r2_value = self.mem.borrow().read_reg(r2 as usize);
+                        debug!(
+                            "running swapr instruction with {} ({} reg) and {} ({} reg)",
+                            r1_value, r1, r2_value, r2
+                        );
+                        self.mem.borrow_mut().write_reg(r1 as usize, r2_value);
+                        self.mem.borrow_mut().write_reg(r2 as usize, r1_value);
+                        return Ok(sv::Action::None);
+                    }
                     opcode::OpCodeValue::Andr => {
                         // TODO: compare sum to 0 and set CCR
                         let result = self.mem.borrow().read_reg(r1 as usize)

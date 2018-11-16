@@ -6,6 +6,7 @@ pub enum OpCodeValue {
     Lr = 0x00,
     Lnr = 0x01,
     Str = 0x02,
+    Swapr = 0x03,
     Andr = 0x04,
     Orr = 0x05,
     Xorr = 0x06,
@@ -50,6 +51,7 @@ pub enum OpType {
 pub static RrInstr: &'static [OpCode] = &[
     OpCodeValue::Lr as OpCode,
     OpCodeValue::Lnr as OpCode,
+    OpCodeValue::Swapr as OpCode,
     OpCodeValue::Str as OpCode,
     OpCodeValue::Andr as OpCode,
     OpCodeValue::Orr as OpCode,
