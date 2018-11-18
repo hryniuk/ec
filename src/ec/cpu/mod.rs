@@ -130,7 +130,12 @@ impl Cpu {
                     Some(o) => {
                         return instruction::Instruction::RegisterRegister(o, r1, r2);
                     }
-                    None => (),
+                    None => {
+                        error!(
+                            "Conversion error: op code with value = {} doesn't exist.",
+                            op_code
+                        );
+                    }
                 }
             }
             Some(opcode::OpType::Rrm) => {
@@ -140,7 +145,12 @@ impl Cpu {
                     Some(o) => {
                         return instruction::Instruction::RegisterRegisterMask(o, m1, r2);
                     }
-                    None => (),
+                    None => {
+                        error!(
+                            "Conversion error: op code with value = {} doesn't exist.",
+                            op_code
+                        );
+                    }
                 }
             }
             Some(opcode::OpType::Rs) => {
@@ -152,7 +162,12 @@ impl Cpu {
                     Some(o) => {
                         return instruction::Instruction::RegisterStorage(o, r1, r2, address);
                     }
-                    None => (),
+                    None => {
+                        error!(
+                            "Conversion error: op code with value = {} doesn't exist.",
+                            op_code
+                        );
+                    }
                 }
             }
             Some(opcode::OpType::Im) => {
@@ -162,10 +177,17 @@ impl Cpu {
                     Some(o) => {
                         return instruction::Instruction::Immediate(o, r1, value);
                     }
-                    None => (),
+                    None => {
+                        error!(
+                            "Conversion error: op code with value = {} doesn't exist.",
+                            op_code
+                        );
+                    }
                 }
             }
-            _ => (),
+            _ => {
+                error!("Unsupported op type for op code = {}", op_code);
+            }
         }
         instruction::Instruction::None
     }
@@ -313,7 +335,9 @@ impl Cpu {
                             .write_reg(r1 as usize, cmp::max(r1_value, address_value) as i32);
                         return Ok(sv::Action::None);
                     }
-                    _ => (),
+                    _ => {
+                        warn!("Unsupported instruction with op code = {:?}", op_code);
+                    }
                 }
             }
             instruction::Instruction::RegisterRegister(op_code, r1, r2) => {
@@ -418,7 +442,9 @@ impl Cpu {
                         self.mem.borrow_mut().write_reg(r1 as usize, result);
                         return Ok(sv::Action::None);
                     }
-                    _ => (),
+                    _ => {
+                        warn!("Unsupported instruction with op code = {:?}", op_code);
+                    }
                 }
             }
             instruction::Instruction::RegisterRegisterMask(op_code, m1, r2) => {
@@ -437,7 +463,9 @@ impl Cpu {
                         }
                         return Ok(sv::Action::None);
                     }
-                    _ => (),
+                    _ => {
+                        warn!("Unsupported instruction with op code = {:?}", op_code);
+                    }
                 }
             }
             instruction::Instruction::Immediate(op_code, r1, value) => match op_code {
@@ -486,7 +514,9 @@ impl Cpu {
                     self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
                     return Ok(sv::Action::None);
                 }
-                _ => (),
+                _ => {
+                    warn!("Unsupported instruction with op code = {:?}", op_code);
+                }
             },
             instruction::Instruction::None => (),
             _ => (),
