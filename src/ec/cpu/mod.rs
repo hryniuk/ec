@@ -11,6 +11,7 @@ use ec::EcError;
 use num_traits::FromPrimitive;
 use std::cell::RefCell;
 use std::cmp;
+use std::i32;
 use std::rc::Rc;
 
 const REGISTERS_OFFSET: usize = 1;
@@ -460,6 +461,15 @@ impl Cpu {
                         debug!("running BCRR instruction with {} mask and {} reg", m1, r2);
                         if !self.mask_ccr(m1) {
                             self.ilc = self.mem.borrow().read_reg(r2 as usize) as usize
+                        }
+                        return Ok(sv::Action::None);
+                    }
+                    opcode::OpCodeValue::Sacr => {
+                        debug!("running SACR instruction with {} mask and {} reg", m1, r2);
+                        if self.mask_ccr(m1) {
+                            self.mem.borrow_mut().write_reg(r2 as usize, i32::MIN);
+                        } else {
+                            self.mem.borrow_mut().write_reg(r2 as usize, 0);
                         }
                         return Ok(sv::Action::None);
                     }
