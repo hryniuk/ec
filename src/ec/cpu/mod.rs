@@ -471,6 +471,7 @@ impl Cpu {
             instruction::Instruction::Immediate(op_code, r1, value) => match op_code {
                 opcode::OpCodeValue::Li => {
                     self.mem.borrow_mut().write_reg(r1 as usize, value as i32);
+                    self.set_ccr(value);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Andi => {
