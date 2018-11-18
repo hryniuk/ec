@@ -1,5 +1,4 @@
 // TODO: make it private
-mod alu;
 pub mod instruction;
 pub mod opcode;
 
