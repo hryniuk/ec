@@ -208,7 +208,7 @@ impl Cpu {
         // ilc should be encapsulated and put in some structure taking care
         // of the full information about next instruction
         match Cpu::op_type(op_code) {
-            Some(opcode::OpType::Rr) => {
+            Some(opcode::OpType::Rr) | Some(opcode::OpType::Rrm) => {
                 self.ilc += 0x2;
             }
             _ => {
