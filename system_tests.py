@@ -61,7 +61,7 @@ def main(binary_path, test_files_dir):
             glob.glob(os.path.join(in_dir, '*.in')),
             glob.glob(os.path.join(out_dir, '*.out'))):
         if out is None:
-            print("error: missing out file for {testcase}")
+            print(f"error: missing out file for {testcase}")
             continue
 
         failed += run_test(testcase, binary_path, alf, in_, out)
