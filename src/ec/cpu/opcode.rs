@@ -17,6 +17,7 @@ pub enum OpCodeValue {
     Sacr = 0x0b,
     Ar = 0x10,
     Sr = 0x11,
+    Rsr = 0x12,
     Mr = 0x13,
     Dr = 0x14,
     L = 0x20,
@@ -63,6 +64,7 @@ pub static RrInstr: &'static [OpCode] = &[
     OpCodeValue::Balr as OpCode,
     OpCodeValue::Ar as OpCode,
     OpCodeValue::Sr as OpCode,
+    OpCodeValue::Rsr as OpCode,
     OpCodeValue::Mr as OpCode,
     OpCodeValue::Dr as OpCode,
 ];
