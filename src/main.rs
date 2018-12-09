@@ -17,7 +17,7 @@ use std::process;
 use std::rc::Rc;
 
 mod args;
-mod ec;
+pub mod ec;
 
 fn read_alf(path: &std::path::PathBuf) -> ec::alf::Alf {
     let alf_file = fs::File::open(&path).unwrap_or_else(|e| {

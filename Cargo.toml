@@ -2,6 +2,7 @@
 name = "ec"
 version = "0.1.0"
 authors = ["Łukasz Hryniuk <lukasz.hryniuk@wp.pl>"]
+edition = "2018"
 
 [profile.release]
 lto = true

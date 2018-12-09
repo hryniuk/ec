@@ -3,8 +3,8 @@ use std::vec::Vec;
 
 extern crate simplelog;
 
-use ec::alf::data_triple::DataTriple;
-use ec::alf::data_triple::ADDRESS_LENGTH;
+use super::data_triple::DataTriple;
+use super::data_triple::ADDRESS_LENGTH;
 
 const CHECKSUM_LENGTH: u32 = 1;
 // TODO: consider chaning it to offset (so 4 + CHECKSUM_LENGTH) instead

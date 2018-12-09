@@ -1,6 +1,6 @@
 pub const SIZE: usize = 8096;
 
-use ec;
+use crate::ec;
 
 pub struct Memory {
     mem: [u8; SIZE],

@@ -1,5 +1,5 @@
-use ec::cpu;
-use ec::mem;
+use crate::ec::cpu;
+use crate::ec::mem;
 use std::cell::RefCell;
 use std::io;
 use std::rc::Rc;

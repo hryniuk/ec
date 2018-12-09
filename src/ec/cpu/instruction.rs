@@ -1,4 +1,4 @@
-use ec::cpu::opcode;
+use crate::ec::cpu::opcode;
 
 pub type Register = u8;
 pub type Address = u16;

@@ -1,4 +1,4 @@
-use ec::cpu::instruction;
+use crate::ec::cpu::instruction;
 use std::num;
 
 pub mod data_triple;

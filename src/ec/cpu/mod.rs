@@ -2,11 +2,11 @@
 pub mod instruction;
 pub mod opcode;
 
-use ec::cpu::instruction::Address;
-use ec::cpu::instruction::Register;
-use ec::mem;
-use ec::sv;
-use ec::EcError;
+use self::instruction::Address;
+use self::instruction::Register;
+use crate::ec::mem;
+use crate::ec::sv;
+use crate::ec::EcError;
 use num_traits::FromPrimitive;
 use std::cell::RefCell;
 use std::cmp;
