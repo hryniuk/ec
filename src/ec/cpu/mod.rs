@@ -117,6 +117,8 @@ impl Cpu {
                     // 4) save address of the last byte of the read program (which should be last?
                     //    with the highest address or last read (is it always the same?)) and
                     //    exit on reaching it
+                    // NOTE: as 0x0d opcode is not used, it could be used a special value
+                    // denoting the end of a program (?)
                     Some(opcode::OpCodeValue::Lr) => {
                         if r1 == 0 && r2 == 0 {
                             return instruction::Instruction::None;
