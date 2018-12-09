@@ -32,7 +32,6 @@ pub enum EcError {
 }
 
 pub struct Ec {
-    ccr: u32,
     pub mem: Rc<RefCell<mem::Memory>>,
     cpu: cpu::Cpu,
     supervisor: sv::Supervisor,
@@ -41,7 +40,6 @@ pub struct Ec {
 impl Ec {
     pub fn new(mem: Rc<RefCell<mem::Memory>>) -> Ec {
         Ec {
-            ccr: 0,
             mem: mem.clone(),
             cpu: cpu::Cpu::new(mem.clone()),
             supervisor: sv::Supervisor::new(mem.clone()),

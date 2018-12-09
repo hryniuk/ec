@@ -18,6 +18,21 @@ const ADDRESS_OFFSET: usize = 2;
 
 type IndirectBit = u8;
 
+enum AluOpType {
+    And,
+    Or,
+    Xor,
+    Not,
+    Add,
+    Sub,
+    RSub,
+    Mul,
+    Div,
+    RDiv,
+    Rem,
+    RRem,
+}
+
 enum Ccr {
     Empty,
     Overflow,
@@ -59,13 +74,13 @@ impl Cpu {
         }
     }
     fn op_type(op_code: opcode::OpCode) -> Option<opcode::OpType> {
-        if opcode::RrInstr.contains(&op_code) {
+        if opcode::RR_INSTR.contains(&op_code) {
             return Some(opcode::OpType::Rr);
-        } else if opcode::RsInstr.contains(&op_code) {
+        } else if opcode::RS_INSTR.contains(&op_code) {
             return Some(opcode::OpType::Rs);
-        } else if opcode::RrmInstr.contains(&op_code) {
+        } else if opcode::RRM_INSTR.contains(&op_code) {
             return Some(opcode::OpType::Rrm);
-        } else if opcode::ImInstr.contains(&op_code) {
+        } else if opcode::IM_INSTR.contains(&op_code) {
             return Some(opcode::OpType::Im);
         }
         None
@@ -98,6 +113,63 @@ impl Cpu {
             ((((b1 & 0xf) as i32) << 16) | ((b2 as i32) << 8) | b3 as i32),
         )
     }
+
+    fn alu_op(&mut self, op1: i32, op2: i32, alu_op_type: AluOpType) -> i32 {
+        match alu_op_type {
+            AluOpType::And => {
+                return op1 & op2;
+            }
+            AluOpType::Or => {
+                return op1 | op2;
+            }
+            AluOpType::Xor => {
+                return op1 ^ op2;
+            }
+            AluOpType::Not => {
+                return !op2;
+            }
+            AluOpType::Add => {
+                return op1 + op2;
+            }
+            AluOpType::Sub => {
+                let result = op1 - op2;
+                self.set_ccr(result);
+                return result;
+            }
+            AluOpType::RSub => {
+                return op2 - op1;
+            }
+            AluOpType::Mul => {
+                return op1 * op2;
+            }
+            AluOpType::Div => {
+                return op1 / op2;
+            }
+            AluOpType::RDiv => {
+                return op2 / op1;
+            }
+            AluOpType::Rem => {
+                return op1 % op2;
+            }
+            AluOpType::RRem => {
+                return op2 % op1;
+            }
+        }
+    }
+
+    fn alu1(&mut self, addr1: usize, op2: i32, alu_op_type: AluOpType) {
+        let op1 = self.mem.borrow().read_word(addr1 as usize);
+        let result = self.alu_op(op1, op2, alu_op_type);
+        self.mem.borrow_mut().write_word(addr1, result);
+    }
+
+    fn alu2(&mut self, addr1: usize, addr2: usize, alu_op_type: AluOpType) {
+        let op1 = self.mem.borrow().read_word(addr1 as usize);
+        let op2 = self.mem.borrow().read_word(addr2 as usize);
+        let result = self.alu_op(op1, op2, alu_op_type);
+        self.mem.borrow_mut().write_word(addr1, result);
+    }
+
     fn read_instruction(&self) -> instruction::Instruction {
         trace!("Reading next instruction at {}", self.ilc);
         let (_indirect_bit, op_code) = self.read_opcode(self.ilc);
@@ -228,7 +300,7 @@ impl Cpu {
         // A => |a, b| a + b;
         // S => |a, b| a - b;
         match next_instr {
-            instruction::Instruction::RegisterStorage(op_code, r1, r2, address) => {
+            instruction::Instruction::RegisterStorage(op_code, r1, _r2, address) => {
                 match op_code {
                     opcode::OpCodeValue::L => {
                         let value = self.mem.borrow().read_word(address as usize);
@@ -268,57 +340,42 @@ impl Cpu {
                     }
                     opcode::OpCodeValue::And => {
                         // TODO: set proper CCR bits
-                        let result = self.mem.borrow().read_reg(r1 as usize)
-                            & self.mem.borrow().read_word(address as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::And);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Or => {
                         // TODO: set proper CCR bits
-                        let result = self.mem.borrow().read_reg(r1 as usize)
-                            | self.mem.borrow().read_word(address as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::Or);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Xor => {
                         // TODO: set proper CCR bits
-                        let result = self.mem.borrow().read_reg(r1 as usize)
-                            ^ self.mem.borrow().read_word(address as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::Xor);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Not => {
                         // TODO: set proper CCR bits
-                        let result = !self.mem.borrow().read_word(address as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::Not);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::A => {
                         // TODO: compare sum to 0 and set CCR
-                        let result = self.mem.borrow().read_reg(r1 as usize)
-                            + self.mem.borrow().read_word(address as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::Add);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::S => {
                         // TODO: compare sum to 0 and set CCR
-                        let result = self.mem.borrow().read_reg(r1 as usize)
-                            - self.mem.borrow().read_word(address as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::Sub);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::M => {
                         // TODO: compare sum to 0 and set CCR
-                        let result = self.mem.borrow().read_reg(r1 as usize)
-                            * self.mem.borrow().read_word(address as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::Mul);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::D => {
                         // TODO: compare sum to 0 and set CCR
-                        let result = self.mem.borrow().read_reg(r1 as usize)
-                            / self.mem.borrow().read_word(address as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::Div);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Min => {
@@ -390,30 +447,19 @@ impl Cpu {
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Andr => {
-                        // TODO: compare sum to 0 and set CCR
-                        let result = self.mem.borrow().read_reg(r1 as usize)
-                            & self.mem.borrow().read_reg(r2 as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::And);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Orr => {
-                        // TODO: compare sum to 0 and set CCR
-                        let result = self.mem.borrow().read_reg(r1 as usize)
-                            | self.mem.borrow().read_reg(r2 as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::Or);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Xorr => {
-                        // TODO: compare sum to 0 and set CCR
-                        let result = self.mem.borrow().read_reg(r1 as usize)
-                            ^ self.mem.borrow().read_reg(r2 as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::Xor);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Notr => {
-                        // TODO: compare sum to 0 and set CCR
-                        let result = !self.mem.borrow().read_reg(r2 as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::Not);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Balr => {
@@ -424,38 +470,23 @@ impl Cpu {
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Ar => {
-                        // TODO: compare sum to 0 and set CCR
-                        let result = self.mem.borrow().read_reg(r1 as usize)
-                            + self.mem.borrow().read_reg(r2 as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::Add);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Sr => {
-                        // TODO: compare sum to 0 and set CCR
-                        let result = self.mem.borrow().read_reg(r1 as usize)
-                            - self.mem.borrow().read_reg(r2 as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::Sub);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Rsr => {
-                        // TODO: compare sum to 0 and set CCR
-                        let result = self.mem.borrow().read_reg(r2 as usize)
-                            - self.mem.borrow().read_reg(r1 as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::RSub);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Mr => {
-                        // TODO: compare sum to 0 and set CCR
-                        let result = self.mem.borrow().read_reg(r1 as usize)
-                            * self.mem.borrow().read_reg(r2 as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::Mul);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Dr => {
-                        // TODO: compare sum to 0 and set CCR
-                        let result = self.mem.borrow().read_reg(r1 as usize)
-                            / self.mem.borrow().read_reg(r2 as usize);
-                        self.mem.borrow_mut().write_reg(r1 as usize, result);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::Div);
                         return Ok(sv::Action::None);
                     }
                     _ => {
@@ -500,44 +531,35 @@ impl Cpu {
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Andi => {
-                    let result = self.mem.borrow().read_reg(r1 as usize) & value;
-                    self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                    self.alu1((r1 as usize) * 4, value, AluOpType::And);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Ori => {
-                    let result = self.mem.borrow().read_reg(r1 as usize) | value;
-                    self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                    self.alu1((r1 as usize) * 4, value, AluOpType::Or);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Xori => {
-                    let result = self.mem.borrow().read_reg(r1 as usize) ^ value;
-                    self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                    self.alu1((r1 as usize) * 4, value, AluOpType::Xor);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Noti => {
-                    let result = !self.mem.borrow().read_reg(r1 as usize);
-                    self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                    self.alu1((r1 as usize) * 4, value, AluOpType::Not);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Ai => {
-                    let result = self.mem.borrow().read_reg(r1 as usize) + value;
-                    self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                    self.alu1((r1 as usize) * 4, value, AluOpType::Add);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Si => {
-                    let result = self.mem.borrow().read_reg(r1 as usize) - value;
-                    self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
-                    self.set_ccr(result);
+                    self.alu1((r1 as usize) * 4, value, AluOpType::Sub);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Mi => {
-                    let result = self.mem.borrow().read_reg(r1 as usize) * value;
-                    self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                    self.alu1((r1 as usize) * 4, value, AluOpType::Mul);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Di => {
-                    let result = self.mem.borrow().read_reg(r1 as usize) / value;
-                    self.mem.borrow_mut().write_reg(r1 as usize, result as i32);
+                    self.alu1((r1 as usize) * 4, value, AluOpType::Div);
                     return Ok(sv::Action::None);
                 }
                 _ => {

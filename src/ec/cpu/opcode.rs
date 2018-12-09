@@ -52,7 +52,7 @@ pub enum OpType {
     Im,
 }
 
-pub static RrInstr: &'static [OpCode] = &[
+pub static RR_INSTR: &'static [OpCode] = &[
     OpCodeValue::Lr as OpCode,
     OpCodeValue::Lnr as OpCode,
     OpCodeValue::Swapr as OpCode,
@@ -68,12 +68,12 @@ pub static RrInstr: &'static [OpCode] = &[
     OpCodeValue::Mr as OpCode,
     OpCodeValue::Dr as OpCode,
 ];
-pub static RrmInstr: &'static [OpCode] = &[
+pub static RRM_INSTR: &'static [OpCode] = &[
     OpCodeValue::Bcsr as OpCode,
     OpCodeValue::Bcrr as OpCode,
     OpCodeValue::Sacr as OpCode,
 ];
-pub static RsInstr: &'static [OpCode] = &[
+pub static RS_INSTR: &'static [OpCode] = &[
     OpCodeValue::L as OpCode,
     OpCodeValue::St as OpCode,
     OpCodeValue::Swap as OpCode,
@@ -89,7 +89,7 @@ pub static RsInstr: &'static [OpCode] = &[
     OpCodeValue::Min as OpCode,
     OpCodeValue::Max as OpCode,
 ];
-pub static ImInstr: &'static [OpCode] = &[
+pub static IM_INSTR: &'static [OpCode] = &[
     OpCodeValue::Li as OpCode,
     OpCodeValue::Andi as OpCode,
     OpCodeValue::Ori as OpCode,
