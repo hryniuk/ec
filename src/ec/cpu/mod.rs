@@ -18,6 +18,7 @@ const ADDRESS_OFFSET: usize = 2;
 
 type IndirectBit = u8;
 
+#[derive(Debug)]
 enum AluOpType {
     And,
     Or,
@@ -115,6 +116,12 @@ impl Cpu {
     }
 
     fn alu_op(&mut self, op1: i32, op2: i32, alu_op_type: AluOpType) -> i32 {
+        trace!(
+            "alu_op call with op1 = {} op2 = {} alu_op_type = {:?}",
+            op1,
+            op2,
+            alu_op_type
+        );
         match alu_op_type {
             AluOpType::And => {
                 return op1 & op2;
