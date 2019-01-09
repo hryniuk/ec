@@ -368,6 +368,11 @@ impl Cpu {
                         self.alu2((r1 as usize) * 4, address as usize, AluOpType::Sub);
                         return Ok(sv::Action::None);
                     }
+                    opcode::OpCodeValue::Rs => {
+                        // TODO: compare sum to 0 and set CCR
+                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::RSub);
+                        return Ok(sv::Action::None);
+                    }
                     opcode::OpCodeValue::M => {
                         // TODO: compare sum to 0 and set CCR
                         self.alu2((r1 as usize) * 4, address as usize, AluOpType::Mul);
