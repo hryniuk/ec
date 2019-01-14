@@ -566,6 +566,10 @@ impl Cpu {
                     self.alu1((r1 as usize) * 4, value, AluOpType::Sub);
                     return Ok(sv::Action::None);
                 }
+                opcode::OpCodeValue::Rsi => {
+                    self.alu1((r1 as usize) * 4, value, AluOpType::RSub);
+                    return Ok(sv::Action::None);
+                }
                 opcode::OpCodeValue::Mi => {
                     self.alu1((r1 as usize) * 4, value, AluOpType::Mul);
                     return Ok(sv::Action::None);

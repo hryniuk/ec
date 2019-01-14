@@ -40,6 +40,7 @@ pub enum OpCodeValue {
     Noti = 0x47,
     Ai = 0x50,
     Si = 0x51,
+    Rsi = 0x52,
     Mi = 0x53,
     Di = 0x54,
     Min = 0x7a,
@@ -99,6 +100,7 @@ pub static IM_INSTR: &'static [OpCode] = &[
     OpCodeValue::Noti as OpCode,
     OpCodeValue::Ai as OpCode,
     OpCodeValue::Si as OpCode,
+    OpCodeValue::Rsi as OpCode,
     OpCodeValue::Mi as OpCode,
     OpCodeValue::Di as OpCode,
 ];
