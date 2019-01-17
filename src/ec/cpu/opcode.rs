@@ -20,6 +20,7 @@ pub enum OpCodeValue {
     Rsr = 0x12,
     Mr = 0x13,
     Dr = 0x14,
+    Rdr = 0x15,
     L = 0x20,
     St = 0x22,
     Swap = 0x23,
@@ -69,6 +70,7 @@ pub static RR_INSTR: &'static [OpCode] = &[
     OpCodeValue::Rsr as OpCode,
     OpCodeValue::Mr as OpCode,
     OpCodeValue::Dr as OpCode,
+    OpCodeValue::Rdr as OpCode,
 ];
 pub static RRM_INSTR: &'static [OpCode] = &[
     OpCodeValue::Bcsr as OpCode,

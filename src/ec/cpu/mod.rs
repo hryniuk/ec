@@ -501,6 +501,10 @@ impl Cpu {
                         self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::Div);
                         return Ok(sv::Action::None);
                     }
+                    opcode::OpCodeValue::Rdr => {
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::RDiv);
+                        return Ok(sv::Action::None);
+                    }
                     _ => {
                         warn!("Unsupported instruction with op code = {:?}", op_code);
                     }
