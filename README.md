@@ -1,4 +1,6 @@
-# ec [![Build Status](https://travis-ci.com/hryniuk/ec.svg?token=hH6LPCLCyUFneJpS1zdy&branch=master)](https://travis-ci.com/hryniuk/ec)
+# ec
+
+[![Travis CI](https://img.shields.io/travis/hryniuk/ec.svg?style=for-the-badge)](https://travis-ci.org/hryniuk/ec)
 
 # WORK IN PROGRESS
 
