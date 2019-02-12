@@ -67,10 +67,10 @@ impl Cpu {
     }
     fn mask_ccr(&self, mask: u8) -> bool {
         match &self.ccr {
-            Ccr::Overflow => return (mask & (1 << 3)) != 0,
-            Ccr::Greater => return (mask & (1 << 2)) != 0,
-            Ccr::Lower => return (mask & (1 << 1)) != 0,
-            Ccr::Equal => return (mask & 1) != 0,
+            Ccr::Overflow => (mask & (1 << 3)) != 0,
+            Ccr::Greater => (mask & (1 << 2)) != 0,
+            Ccr::Lower => (mask & (1 << 1)) != 0,
+            Ccr::Equal => (mask & 1) != 0,
             Ccr::Empty => false,
         }
     }
@@ -111,11 +111,11 @@ impl Cpu {
         // https://en.wikipedia.org/wiki/Sign_extension
         (
             (b1 & 0xf0) >> 4,
-            ((((b1 & 0xf) as i32) << 16) | ((b2 as i32) << 8) | b3 as i32),
+            (i32::from(b1 & 0xf) << 16) | (i32::from(b2) << 8) | i32::from(b3),
         )
     }
 
-    fn alu_op(&mut self, op1: i32, op2: i32, alu_op_type: AluOpType) -> i32 {
+    fn alu_op(&mut self, op1: i32, op2: i32, alu_op_type: &AluOpType) -> i32 {
         trace!(
             "alu_op call with op1 = {} op2 = {} alu_op_type = {:?}",
             op1,
@@ -124,53 +124,53 @@ impl Cpu {
         );
         match alu_op_type {
             AluOpType::And => {
-                return op1 & op2;
+                op1 & op2
             }
             AluOpType::Or => {
-                return op1 | op2;
+                op1 | op2
             }
             AluOpType::Xor => {
-                return op1 ^ op2;
+                op1 ^ op2
             }
             AluOpType::Not => {
-                return !op2;
+                !op2
             }
             AluOpType::Add => {
-                return op1 + op2;
+                op1 + op2
             }
             AluOpType::Sub => {
                 let result = op1 - op2;
                 self.set_ccr(result);
-                return result;
+                result
             }
             AluOpType::RSub => {
-                return op2 - op1;
+                op2 - op1
             }
             AluOpType::Mul => {
-                return op1 * op2;
+                op1 * op2
             }
             AluOpType::Div => {
-                return op1 / op2;
+                op1 / op2
             }
             AluOpType::RDiv => {
-                return op2 / op1;
+                op2 / op1
             }
             AluOpType::Rem => {
-                return op1 % op2;
+                op1 % op2
             }
             AluOpType::RRem => {
-                return op2 % op1;
+                op2 % op1
             }
         }
     }
 
-    fn alu1(&mut self, addr1: usize, op2: i32, alu_op_type: AluOpType) {
+    fn alu1(&mut self, addr1: usize, op2: i32, alu_op_type: &AluOpType) {
         let op1 = self.mem.borrow().read_word(addr1 as usize);
         let result = self.alu_op(op1, op2, alu_op_type);
         self.mem.borrow_mut().write_word(addr1, result);
     }
 
-    fn alu2(&mut self, addr1: usize, addr2: usize, alu_op_type: AluOpType) {
+    fn alu2(&mut self, addr1: usize, addr2: usize, alu_op_type: &AluOpType) {
         let op1 = self.mem.borrow().read_word(addr1 as usize);
         let op2 = self.mem.borrow().read_word(addr2 as usize);
         let result = self.alu_op(op1, op2, alu_op_type);
@@ -347,47 +347,47 @@ impl Cpu {
                     }
                     opcode::OpCodeValue::And => {
                         // TODO: set proper CCR bits
-                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::And);
+                        self.alu2((r1 as usize) * 4, address as usize, &AluOpType::And);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Or => {
                         // TODO: set proper CCR bits
-                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::Or);
+                        self.alu2((r1 as usize) * 4, address as usize, &AluOpType::Or);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Xor => {
                         // TODO: set proper CCR bits
-                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::Xor);
+                        self.alu2((r1 as usize) * 4, address as usize, &AluOpType::Xor);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Not => {
                         // TODO: set proper CCR bits
-                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::Not);
+                        self.alu2((r1 as usize) * 4, address as usize, &AluOpType::Not);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::A => {
                         // TODO: compare sum to 0 and set CCR
-                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::Add);
+                        self.alu2((r1 as usize) * 4, address as usize, &AluOpType::Add);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::S => {
                         // TODO: compare sum to 0 and set CCR
-                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::Sub);
+                        self.alu2((r1 as usize) * 4, address as usize, &AluOpType::Sub);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Rs => {
                         // TODO: compare sum to 0 and set CCR
-                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::RSub);
+                        self.alu2((r1 as usize) * 4, address as usize, &AluOpType::RSub);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::M => {
                         // TODO: compare sum to 0 and set CCR
-                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::Mul);
+                        self.alu2((r1 as usize) * 4, address as usize, &AluOpType::Mul);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::D => {
                         // TODO: compare sum to 0 and set CCR
-                        self.alu2((r1 as usize) * 4, address as usize, AluOpType::Div);
+                        self.alu2((r1 as usize) * 4, address as usize, &AluOpType::Div);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Min => {
@@ -459,19 +459,19 @@ impl Cpu {
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Andr => {
-                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::And);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, &AluOpType::And);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Orr => {
-                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::Or);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, &AluOpType::Or);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Xorr => {
-                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::Xor);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, &AluOpType::Xor);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Notr => {
-                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::Not);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, &AluOpType::Not);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Balr => {
@@ -482,27 +482,27 @@ impl Cpu {
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Ar => {
-                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::Add);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, &AluOpType::Add);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Sr => {
-                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::Sub);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, &AluOpType::Sub);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Rsr => {
-                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::RSub);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, &AluOpType::RSub);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Mr => {
-                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::Mul);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, &AluOpType::Mul);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Dr => {
-                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::Div);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, &AluOpType::Div);
                         return Ok(sv::Action::None);
                     }
                     opcode::OpCodeValue::Rdr => {
-                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, AluOpType::RDiv);
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, &AluOpType::RDiv);
                         return Ok(sv::Action::None);
                     }
                     _ => {
@@ -547,39 +547,39 @@ impl Cpu {
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Andi => {
-                    self.alu1((r1 as usize) * 4, value, AluOpType::And);
+                    self.alu1((r1 as usize) * 4, value, &AluOpType::And);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Ori => {
-                    self.alu1((r1 as usize) * 4, value, AluOpType::Or);
+                    self.alu1((r1 as usize) * 4, value, &AluOpType::Or);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Xori => {
-                    self.alu1((r1 as usize) * 4, value, AluOpType::Xor);
+                    self.alu1((r1 as usize) * 4, value, &AluOpType::Xor);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Noti => {
-                    self.alu1((r1 as usize) * 4, value, AluOpType::Not);
+                    self.alu1((r1 as usize) * 4, value, &AluOpType::Not);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Ai => {
-                    self.alu1((r1 as usize) * 4, value, AluOpType::Add);
+                    self.alu1((r1 as usize) * 4, value, &AluOpType::Add);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Si => {
-                    self.alu1((r1 as usize) * 4, value, AluOpType::Sub);
+                    self.alu1((r1 as usize) * 4, value, &AluOpType::Sub);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Rsi => {
-                    self.alu1((r1 as usize) * 4, value, AluOpType::RSub);
+                    self.alu1((r1 as usize) * 4, value, &AluOpType::RSub);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Mi => {
-                    self.alu1((r1 as usize) * 4, value, AluOpType::Mul);
+                    self.alu1((r1 as usize) * 4, value, &AluOpType::Mul);
                     return Ok(sv::Action::None);
                 }
                 opcode::OpCodeValue::Di => {
-                    self.alu1((r1 as usize) * 4, value, AluOpType::Div);
+                    self.alu1((r1 as usize) * 4, value, &AluOpType::Div);
                     return Ok(sv::Action::None);
                 }
                 _ => {

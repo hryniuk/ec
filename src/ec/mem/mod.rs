@@ -42,10 +42,10 @@ impl Memory {
     }
 
     pub fn read_word(&self, address: usize) -> i32 {
-        let value: i32 = ((self.mem[address] as i32) << 24)
-            + ((self.mem[address + 1] as i32) << 16)
-            + ((self.mem[address + 2] as i32) << 8)
-            + (self.mem[address + 3] as i32);
+        let value: i32 = (i32::from(self.mem[address]) << 24)
+            + (i32::from(self.mem[address + 1]) << 16)
+            + (i32::from(self.mem[address + 2]) << 8)
+            + i32::from(self.mem[address + 3]);
         trace!("reading word at {} = {}", address, value);
         value
     }
@@ -63,7 +63,7 @@ impl Memory {
         let mut value: u32 = 0;
         for v in self.mem[index * 4..(index + 1) * 4].iter() {
             value <<= 8;
-            value += *v as u32;
+            value += u32::from(*v);
         }
         value
     }
@@ -71,7 +71,7 @@ impl Memory {
     pub fn set_gpr(&mut self, index: usize, value: u32) {
         assert!(index < 16);
         for (i, e) in self.mem[index * 4..(index + 1) * 4].iter_mut().enumerate() {
-            *e = (value & (0xff << (4 - i - 1) * 8)) as u8;
+            *e = (value & (0xff << ((4 - i - 1) * 8))) as u8;
         }
     }
 

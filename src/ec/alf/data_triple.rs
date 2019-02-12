@@ -18,7 +18,7 @@ impl DataTriple {
         let address = u32::from_str_radix(&data_triple_chunk[..ADDRESS_LENGTH], 16).unwrap();
 
         let data_fields: Vec<u8> = data_triple_chunk
-            [ADDRESS_LENGTH..ADDRESS_LENGTH + ((count as u32) * DATA_FIELD_LENGTH) as usize]
+            [ADDRESS_LENGTH..ADDRESS_LENGTH + (u32::from(count) * DATA_FIELD_LENGTH) as usize]
             .as_bytes()
             .chunks(DATA_FIELD_LENGTH as usize)
             .map(|c| u8::from_str_radix(str::from_utf8(c).unwrap(), 16).unwrap())

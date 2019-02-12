@@ -38,7 +38,7 @@ pub struct Ec {
 }
 
 impl Ec {
-    pub fn new(mem: Rc<RefCell<mem::Memory>>) -> Ec {
+    pub fn new(mem: &Rc<RefCell<mem::Memory>>) -> Ec {
         Ec {
             mem: mem.clone(),
             cpu: cpu::Cpu::new(mem.clone()),

@@ -43,12 +43,12 @@ fn read_alf(path: &std::path::PathBuf) -> ec::alf::Alf {
         process::exit(1);
     });
 
-    return alf;
+    alf
 }
 
 fn main() {
     let alf = read_alf(&args::parse(&env::args().collect()));
-    let mut ecc = ec::Ec::new(Rc::new(RefCell::new(ec::mem::Memory::from(&alf))));
+    let mut ecc = ec::Ec::new(&Rc::new(RefCell::new(ec::mem::Memory::from(&alf))));
 
     match ecc.run() {
         Ok(_) => (),

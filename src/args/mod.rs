@@ -7,7 +7,7 @@ fn init_logger(log_level: LevelFilter) {
     CombinedLogger::init(vec![TermLogger::new(log_level, Config::default()).unwrap()]).unwrap();
 }
 
-fn print_usage(program: &str, opts: getopts::Options) {
+fn print_usage(program: &str, opts: &getopts::Options) {
     let brief = format!("Usage: {} [options]", program);
     print!("{}", opts.usage(&brief));
 }
@@ -44,7 +44,7 @@ pub fn parse(args: &Vec<String>) -> std::path::PathBuf {
     let alf_path: std::path::PathBuf = if matches.opt_present("f") {
         std::path::PathBuf::from(matches.opt_str("f").clone().unwrap())
     } else {
-        print_usage(&program, options);
+        print_usage(&program, &options);
         process::exit(1);
     };
 
