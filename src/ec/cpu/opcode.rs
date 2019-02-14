@@ -21,6 +21,8 @@ pub enum OpCodeValue {
     Mr = 0x13,
     Dr = 0x14,
     Rdr = 0x15,
+    Remr = 0x16,
+    Rremr = 0x17,
     L = 0x20,
     St = 0x22,
     Swap = 0x23,
@@ -34,6 +36,8 @@ pub enum OpCodeValue {
     Rs = 0x32,
     M = 0x33,
     D = 0x34,
+    Rem = 0x36,
+    Rrem = 0x37,
     Li = 0x40,
     Andi = 0x44,
     Ori = 0x45,
@@ -44,6 +48,8 @@ pub enum OpCodeValue {
     Rsi = 0x52,
     Mi = 0x53,
     Di = 0x54,
+    Remi = 0x56,
+    Rremi = 0x57,
     Min = 0x7a,
     Max = 0x7b,
 }
@@ -71,6 +77,8 @@ pub static RR_INSTR: &'static [OpCode] = &[
     OpCodeValue::Mr as OpCode,
     OpCodeValue::Dr as OpCode,
     OpCodeValue::Rdr as OpCode,
+    OpCodeValue::Remr as OpCode,
+    OpCodeValue::Rremr as OpCode,
 ];
 pub static RRM_INSTR: &'static [OpCode] = &[
     OpCodeValue::Bcsr as OpCode,
@@ -91,6 +99,8 @@ pub static RS_INSTR: &'static [OpCode] = &[
     OpCodeValue::Rs as OpCode,
     OpCodeValue::M as OpCode,
     OpCodeValue::D as OpCode,
+    OpCodeValue::Rem as OpCode,
+    OpCodeValue::Rrem as OpCode,
     OpCodeValue::Min as OpCode,
     OpCodeValue::Max as OpCode,
 ];
@@ -105,4 +115,6 @@ pub static IM_INSTR: &'static [OpCode] = &[
     OpCodeValue::Rsi as OpCode,
     OpCodeValue::Mi as OpCode,
     OpCodeValue::Di as OpCode,
+    OpCodeValue::Remi as OpCode,
+    OpCodeValue::Rremi as OpCode,
 ];

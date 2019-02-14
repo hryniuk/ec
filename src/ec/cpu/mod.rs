@@ -123,44 +123,22 @@ impl Cpu {
             alu_op_type
         );
         match alu_op_type {
-            AluOpType::And => {
-                op1 & op2
-            }
-            AluOpType::Or => {
-                op1 | op2
-            }
-            AluOpType::Xor => {
-                op1 ^ op2
-            }
-            AluOpType::Not => {
-                !op2
-            }
-            AluOpType::Add => {
-                op1 + op2
-            }
+            AluOpType::And => op1 & op2,
+            AluOpType::Or => op1 | op2,
+            AluOpType::Xor => op1 ^ op2,
+            AluOpType::Not => !op2,
+            AluOpType::Add => op1 + op2,
             AluOpType::Sub => {
                 let result = op1 - op2;
                 self.set_ccr(result);
                 result
             }
-            AluOpType::RSub => {
-                op2 - op1
-            }
-            AluOpType::Mul => {
-                op1 * op2
-            }
-            AluOpType::Div => {
-                op1 / op2
-            }
-            AluOpType::RDiv => {
-                op2 / op1
-            }
-            AluOpType::Rem => {
-                op1 % op2
-            }
-            AluOpType::RRem => {
-                op2 % op1
-            }
+            AluOpType::RSub => op2 - op1,
+            AluOpType::Mul => op1 * op2,
+            AluOpType::Div => op1 / op2,
+            AluOpType::RDiv => op2 / op1,
+            AluOpType::Rem => op1 % op2,
+            AluOpType::RRem => op2 % op1,
         }
     }
 
@@ -390,6 +368,16 @@ impl Cpu {
                         self.alu2((r1 as usize) * 4, address as usize, &AluOpType::Div);
                         return Ok(sv::Action::None);
                     }
+                    opcode::OpCodeValue::Rem => {
+                        // TODO: compare sum to 0 and set CCR
+                        self.alu2((r1 as usize) * 4, address as usize, &AluOpType::Rem);
+                        return Ok(sv::Action::None);
+                    }
+                    opcode::OpCodeValue::Rrem => {
+                        // TODO: compare sum to 0 and set CCR
+                        self.alu2((r1 as usize) * 4, address as usize, &AluOpType::RRem);
+                        return Ok(sv::Action::None);
+                    }
                     opcode::OpCodeValue::Min => {
                         let r1_value = self.mem.borrow().read_reg(r1 as usize);
                         let address_value = self.mem.borrow().read_word(address as usize);
@@ -505,6 +493,14 @@ impl Cpu {
                         self.alu2((r1 as usize) * 4, (r2 as usize) * 4, &AluOpType::RDiv);
                         return Ok(sv::Action::None);
                     }
+                    opcode::OpCodeValue::Remr => {
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, &AluOpType::Rem);
+                        return Ok(sv::Action::None);
+                    }
+                    opcode::OpCodeValue::Rremr => {
+                        self.alu2((r1 as usize) * 4, (r2 as usize) * 4, &AluOpType::RRem);
+                        return Ok(sv::Action::None);
+                    }
                     _ => {
                         warn!("Unsupported instruction with op code = {:?}", op_code);
                     }
@@ -580,6 +576,14 @@ impl Cpu {
                 }
                 opcode::OpCodeValue::Di => {
                     self.alu1((r1 as usize) * 4, value, &AluOpType::Div);
+                    return Ok(sv::Action::None);
+                }
+                opcode::OpCodeValue::Remi => {
+                    self.alu1((r1 as usize) * 4, value, &AluOpType::Rem);
+                    return Ok(sv::Action::None);
+                }
+                opcode::OpCodeValue::Rremi => {
+                    self.alu1((r1 as usize) * 4, value, &AluOpType::RRem);
                     return Ok(sv::Action::None);
                 }
                 _ => {
