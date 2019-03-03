@@ -15,3 +15,11 @@ num-derive = "*"
 num-traits = "*"
 text_io = "*"
 simplelog = "^0.5.0"
+
+[[bin]]
+name = "ec"
+path = "src/main.rs"
+
+[[bin]]
+name = "fconv"
+path = "src/fconv.rs"
