@@ -10,15 +10,14 @@ ut: ## Runs unit tests.
 
 .PHONY: system_tests
 system_tests: ## Runs tests which check if EC correctly parses existing test ALFs.
-	python3 system_tests.py --bin build/debug/ec --test-files test_files/
+	python3 system_tests.py --bin target/debug/ec --test-files test_files/
 
 .PHONY: all
 all: build test doc
 
 .PHONY: build
 build: ## Builds debug version under build/ directory.
-	mkdir -p build
-	cargo build --target-dir build
+	cargo build
 
 .PHONY: doc
 doc: ## Generates docs by running `cargo rustdoc` with predetermined flags.
