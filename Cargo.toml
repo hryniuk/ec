@@ -1,7 +1,7 @@
 [package]
 name = "ec"
 version = "0.1.0"
-authors = ["Łukasz Hryniuk <lukasz.hryniuk@wp.pl>"]
+authors = ["Łukasz Hryniuk <code@hryniuk.pl>"]
 edition = "2018"
 
 [profile.release]
