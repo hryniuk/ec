@@ -52,6 +52,7 @@ pub enum OpCodeValue {
     Rdi = 0x55,
     Remi = 0x56,
     Rremi = 0x57,
+    Ac = 0x70,
     Min = 0x7a,
     Max = 0x7b,
 }
@@ -61,6 +62,7 @@ pub enum OpType {
     Rrm,
     Rs,
     Im,
+    Ch,
 }
 
 pub static RR_INSTR: &'static [OpCode] = &[
@@ -122,3 +124,4 @@ pub static IM_INSTR: &'static [OpCode] = &[
     OpCodeValue::Remi as OpCode,
     OpCodeValue::Rremi as OpCode,
 ];
+pub static CH_INSTR: &'static [OpCode] = &[OpCodeValue::Ac as OpCode];

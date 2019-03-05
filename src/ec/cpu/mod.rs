@@ -83,6 +83,8 @@ impl Cpu {
             return Some(opcode::OpType::Rrm);
         } else if opcode::IM_INSTR.contains(&op_code) {
             return Some(opcode::OpType::Im);
+        } else if opcode::CH_INSTR.contains(&op_code) {
+            return Some(opcode::OpType::Ch);
         }
         None
     }
@@ -235,6 +237,23 @@ impl Cpu {
                 match FromPrimitive::from_u8(op_code) {
                     Some(o) => {
                         return instruction::Instruction::Immediate(o, r1, value);
+                    }
+                    None => {
+                        error!(
+                            "Conversion error: op code with value = {} doesn't exist.",
+                            op_code
+                        );
+                    }
+                }
+            }
+            Some(opcode::OpType::Ch) => {
+                let (r1, r2) = self.read_op_registers(self.ilc + REGISTERS_OFFSET);
+                trace!("CH instruction, r1 = {} r2 = {}", r1, r2);
+                let address = self.read_op_address(self.ilc);
+
+                match FromPrimitive::from_u8(op_code) {
+                    Some(o) => {
+                        return instruction::Instruction::Character(o, r1, r2, address);
                     }
                     None => {
                         error!(
@@ -593,6 +612,15 @@ impl Cpu {
                 }
                 opcode::OpCodeValue::Rremi => {
                     self.alu1((r1 as usize) * 4, value, &AluOpType::RRem);
+                    return Ok(sv::Action::None);
+                }
+                _ => {
+                    warn!("Unsupported instruction with op code = {:?}", op_code);
+                }
+            },
+            instruction::Instruction::Character(op_code, r1, _r2, address) => match op_code {
+                opcode::OpCodeValue::Ac => {
+                    self.alu2((r1 as usize) * 4, address as usize, &AluOpType::Add);
                     return Ok(sv::Action::None);
                 }
                 _ => {
