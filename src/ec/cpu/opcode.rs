@@ -52,6 +52,14 @@ pub enum OpCodeValue {
     Rdi = 0x55,
     Remi = 0x56,
     Rremi = 0x57,
+    Ac = 0x70,
+    Sc = 0x71,
+    Rsc = 0x72,
+    Mc = 0x73,
+    Dc = 0x74,
+    Rdc = 0x75,
+    Remc = 0x76,
+    Rremc = 0x77,
     Min = 0x7a,
     Max = 0x7b,
 }
@@ -61,6 +69,7 @@ pub enum OpType {
     Rrm,
     Rs,
     Im,
+    Ch,
 }
 
 pub static RR_INSTR: &'static [OpCode] = &[
@@ -121,4 +130,14 @@ pub static IM_INSTR: &'static [OpCode] = &[
     OpCodeValue::Rdi as OpCode,
     OpCodeValue::Remi as OpCode,
     OpCodeValue::Rremi as OpCode,
+];
+pub static CH_INSTR: &'static [OpCode] = &[
+    OpCodeValue::Ac as OpCode,
+    OpCodeValue::Sc as OpCode,
+    OpCodeValue::Rsc as OpCode,
+    OpCodeValue::Mc as OpCode,
+    OpCodeValue::Dc as OpCode,
+    OpCodeValue::Rdc as OpCode,
+    OpCodeValue::Remc as OpCode,
+    OpCodeValue::Rremc as OpCode,
 ];
