@@ -41,7 +41,7 @@ impl Alf {
                         return Err(format!(
                             "Cannot read start address from end record {}: {}",
                             end_record, e
-                        ))
+                        ));
                     }
                 }
             }
@@ -62,7 +62,7 @@ impl Alf {
                         start_address,
                     })
                 } else {
-                    Err(format!("Records indices should be consecutive numbers"))
+                    Err("Records indices should be consecutive numbers".to_string())
                 }
             }
             Err(e) => Err(e),

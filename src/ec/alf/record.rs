@@ -18,7 +18,7 @@ pub struct Record {
 
 impl Record {
     pub fn from(record_line: String) -> Result<Record, String> {
-        assert!(record_line.len() > 0);
+        assert!(!record_line.is_empty());
         // TODO: consider converting string to Vec<Ops>
         if !Record::is_valid(&record_line) {
             return Err("invalid record line".to_owned());

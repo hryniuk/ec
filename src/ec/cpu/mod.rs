@@ -672,7 +672,6 @@ impl Cpu {
                 }
             },
             instruction::Instruction::None => (),
-            _ => (),
         }
         Ok(sv::Action::Exit)
     }

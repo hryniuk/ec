@@ -37,13 +37,11 @@ fn read_alf(path: &std::path::PathBuf) -> ec::alf::Alf {
             process::exit(1);
         });
 
-    let alf = ec::alf::Alf::from(source_lines).unwrap_or_else(|e| {
+    ec::alf::Alf::from(source_lines).unwrap_or_else(|e| {
         // TODO: avoid this unwrap in some way
         error!("{}: {}", path.to_str().unwrap(), e);
         process::exit(1);
-    });
-
-    alf
+    })
 }
 
 fn main() {
