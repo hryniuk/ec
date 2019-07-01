@@ -619,6 +619,22 @@ impl Cpu {
                 }
             },
             instruction::Instruction::Character(op_code, r1, _r2, address) => match op_code {
+                opcode::OpCodeValue::Andc => {
+                    self.alu2((r1 as usize) * 4, address as usize, &AluOpType::And);
+                    return Ok(sv::Action::None);
+                }
+                opcode::OpCodeValue::Orc => {
+                    self.alu2((r1 as usize) * 4, address as usize, &AluOpType::Or);
+                    return Ok(sv::Action::None);
+                }
+                opcode::OpCodeValue::Xorc => {
+                    self.alu2((r1 as usize) * 4, address as usize, &AluOpType::Xor);
+                    return Ok(sv::Action::None);
+                }
+                opcode::OpCodeValue::Notc => {
+                    self.alu2((r1 as usize) * 4, address as usize, &AluOpType::Not);
+                    return Ok(sv::Action::None);
+                }
                 opcode::OpCodeValue::Ac => {
                     self.alu2((r1 as usize) * 4, address as usize, &AluOpType::Add);
                     return Ok(sv::Action::None);

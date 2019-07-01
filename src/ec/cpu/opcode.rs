@@ -52,6 +52,10 @@ pub enum OpCodeValue {
     Rdi = 0x55,
     Remi = 0x56,
     Rremi = 0x57,
+    Andc = 0x64,
+    Orc = 0x65,
+    Xorc = 0x66,
+    Notc = 0x67,
     Ac = 0x70,
     Sc = 0x71,
     Rsc = 0x72,
@@ -132,6 +136,10 @@ pub static IM_INSTR: &'static [OpCode] = &[
     OpCodeValue::Rremi as OpCode,
 ];
 pub static CH_INSTR: &'static [OpCode] = &[
+    OpCodeValue::Andc as OpCode,
+    OpCodeValue::Orc as OpCode,
+    OpCodeValue::Xor as OpCode,
+    OpCodeValue::Notc as OpCode,
     OpCodeValue::Ac as OpCode,
     OpCodeValue::Sc as OpCode,
     OpCodeValue::Rsc as OpCode,
