@@ -18,8 +18,8 @@ simplelog = "^0.5.0"
 
 [[bin]]
 name = "ec"
-path = "src/main.rs"
+path = "src/ec_main.rs"
 
 [[bin]]
 name = "fconv"
-path = "src/fconv.rs"
+path = "src/fconv_main.rs"

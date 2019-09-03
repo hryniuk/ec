@@ -1,4 +1,5 @@
 // TODO: make it private
+pub mod fconv;
 pub mod instruction;
 pub mod opcode;
 
