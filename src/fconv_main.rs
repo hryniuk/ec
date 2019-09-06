@@ -1,4 +1,6 @@
 #[macro_use]
+extern crate approx;
+#[macro_use]
 extern crate log;
 #[macro_use]
 extern crate num_derive;
@@ -19,7 +21,11 @@ fn main() {
     match trimmed.parse::<f32>() {
         Err(..) => println!("this was not an integer: {}", trimmed),
         Ok(i) => {
-            println!("{} converted to {:x?}", i, ec::cpu::fconv::float32_to_bytes(i));
+            println!(
+                "{} converted to {:x?}",
+                i,
+                ec::cpu::fconv::float32_to_bytes(i)
+            );
         }
     };
 }
