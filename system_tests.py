@@ -12,21 +12,27 @@ def read(filepath):
     if filepath == None:
         return ""
 
-    with open(filepath, 'r') as f:
+    with open(filepath, "r") as f:
         return f.read()
 
 
 def assert_eq_output(expected, output):
-    return (expected is None and output is None) or expected.strip() == output.strip()
+    return (expected is None and output is None) or (
+        expected is not None
+        and output is not None
+        and expected.strip() == output.strip()
+    )
 
 
 def run_test(testcase, binary_path, alf_filepath, in_filepath, out_filepath):
     input = read(in_filepath)
     out = None
     try:
-        out = subprocess.check_output([binary_path, '-f', alf_filepath, '-q'],
-                                  input=input,
-                                  universal_newlines=True)
+        out = subprocess.check_output(
+            [binary_path, "-f", alf_filepath, "-q"],
+            input=input,
+            universal_newlines=True,
+        )
     except subprocess.CalledProcessError as e:
         print("{} nok\nerror: {}".format(testcase, e))
 
@@ -55,16 +61,18 @@ def generate_tests(alfs, ins, outs):
 
 
 def main(binary_path, test_files_dir):
-    alf_dir, in_dir, out_dir = map(assert_exists,
-                           map(lambda x: os.path.join(test_files_dir, x),
-                               ('alf', 'in', 'out')))
+    alf_dir, in_dir, out_dir = map(
+        assert_exists,
+        map(lambda x: os.path.join(test_files_dir, x), ("alf", "in", "out")),
+    )
 
     failed = 0
 
     for testcase, alf, in_, out in generate_tests(
-            glob.glob(os.path.join(alf_dir, '*.alf')),
-            glob.glob(os.path.join(in_dir, '*.in')),
-            glob.glob(os.path.join(out_dir, '*.out'))):
+        glob.glob(os.path.join(alf_dir, "*.alf")),
+        glob.glob(os.path.join(in_dir, "*.in")),
+        glob.glob(os.path.join(out_dir, "*.out")),
+    ):
         if out is None:
             print("error: missing out file for {}".format(testcase))
             continue
@@ -78,13 +86,14 @@ def main(binary_path, test_files_dir):
 
 def read_paths_from_command_line():
     parser = argparse.ArgumentParser(
-        description='Run integration tests with given binary and test files')
-    parser.add_argument('--bin',
-                        help='ec binary path',
-                        required=True)
-    parser.add_argument('--test-files',
-                        help='path to test_files directory; it'
-                             'has to contain alf and out directories')
+        description="Run integration tests with given binary and test files"
+    )
+    parser.add_argument("--bin", help="ec binary path", required=True)
+    parser.add_argument(
+        "--test-files",
+        help="path to test_files directory; it"
+        "has to contain alf and out directories",
+    )
 
     args = parser.parse_args()
 
@@ -98,6 +107,6 @@ def assert_exists(path):
     return path
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     bin_dir, test_files_dir = read_paths_from_command_line()
     main(bin_dir, test_files_dir)
