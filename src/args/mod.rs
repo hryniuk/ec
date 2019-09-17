@@ -4,7 +4,13 @@ use std;
 use std::process;
 
 fn init_logger(log_level: LevelFilter) {
-    CombinedLogger::init(vec![TermLogger::new(log_level, Config::default()).unwrap()]).unwrap();
+    match TermLogger::new(log_level, Config::default()) {
+        Some(tl) => match CombinedLogger::init(vec![tl]) {
+            Ok(_) => {}
+            Err(e) => error!("Cannot initialize logger: {}", e),
+        },
+        None => error!("Cannot initialize logger"),
+    }
 }
 
 fn print_usage(program: &str, opts: &getopts::Options) {
