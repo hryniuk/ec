@@ -1,7 +1,5 @@
 # ec
 
-[![Travis CI](https://img.shields.io/travis/hryniuk/ec.svg?style=for-the-badge)](https://travis-ci.org/hryniuk/ec)
-
 # WORK IN PROGRESS
 
 The Educational Computer, Model 1 - project from the "Etudes for Programmers"
