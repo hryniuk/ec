@@ -29,17 +29,26 @@ fn read_alf(path: &std::path::PathBuf) -> ec::alf::Alf {
         .lines()
         .collect::<Result<Vec<String>, io::Error>>()
         .unwrap_or_else(|e| {
-            error!(
-                "Cannot read lines from file {}: {}",
-                path.to_str().unwrap(),
-                e
-            );
+            match path.to_str() {
+                Some(p) => {
+                    error!("Cannot read lines from file {}: {}", p, e);
+                }
+                None => {
+                    error!("cannot read input file");
+                }
+            }
             process::exit(1);
         });
 
     ec::alf::Alf::from(source_lines).unwrap_or_else(|e| {
-        // TODO: avoid this unwrap in some way
-        error!("{}: {}", path.to_str().unwrap(), e);
+        match path.to_str() {
+            Some(p) => {
+                error!("{}: {}", p, e);
+            }
+            None => {
+                error!("cannot read input file");
+            }
+        }
         process::exit(1);
     })
 }
