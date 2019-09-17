@@ -22,9 +22,14 @@ def assert_eq_output(expected, output):
 
 def run_test(testcase, binary_path, alf_filepath, in_filepath, out_filepath):
     input = read(in_filepath)
-    out = subprocess.check_output([binary_path, '-f', alf_filepath, '-q'],
+    out = None
+    try:
+        out = subprocess.check_output([binary_path, '-f', alf_filepath, '-q'],
                                   input=input,
                                   universal_newlines=True)
+    except subprocess.CalledProcessError as e:
+        print("{} nok\nerror: {}".format(testcase, e))
+
     expected_output = read(out_filepath)
     if assert_eq_output(expected_output, out):
         print("{} ok".format(testcase))
