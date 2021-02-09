@@ -1,7 +1,5 @@
 # ec
 
-# WORK IN PROGRESS
-
 The Educational Computer, Model 1 - project from the "Etudes for Programmers"
 book.
 
@@ -9,6 +7,9 @@ book.
 transforms data. As an input it accepts **ALF** (_absolute load file_; see
 below) and **input stream**. It prints an **output stream** - the result of a
 given program.
+
+As I've moved to other projects, this one has been archived.
+Implemented OP Codes can be found [here](https://github.com/hryniuk/ec/issues/1).
 
 ## Building
 
